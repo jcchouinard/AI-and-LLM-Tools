@@ -19,3 +19,7 @@ $ pip install -r requirements.txt
 ## ChatGPT Bookmarklet
 
 - [Find bookmarklet code here.](./chatgpt-query-fanout-analyzer.js) 
+
+## AI Agents
+
+- `readme_generator.py`: AI agent that generates README.md file for a project (OpenAI API)

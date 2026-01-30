@@ -1,3 +1,7 @@
+# This was crated based on code shared in Coursera
+# Course: AI Agents and Agentic AI with Python & Generative AI
+# https://www.coursera.org/learn/ai-agents-python
+
 import os 
 import json
 import time
