@@ -9,6 +9,4 @@ Repository for all things related to AI search, LLMs, AI Agents and more
 
 ## ChatGPT Bookmarklet
 
-- [Find bookmarklet code here.](./chatgpt-query-fanout-analyzer.js)
-
-[Dark Mode Tool](javascript:(function()%7B%20document.body.style.backgroundColor%20%3D%20'%23333'%3B%20document.body.style.color%20%3D%20'%23FFF'%3B%20alert(%22Dark%20mode%20activated!%22)%3B%7D)()%3B)
+- [Find bookmarklet code here.](./chatgpt-query-fanout-analyzer.js) 
