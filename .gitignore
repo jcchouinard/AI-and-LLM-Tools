@@ -10,3 +10,5 @@ empty/
 *.DS_STORE
 pending/
 *template.ipynb
+*api_keys.py*
+venv/

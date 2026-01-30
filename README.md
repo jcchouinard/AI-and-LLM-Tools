@@ -7,6 +7,15 @@ Repository for all things related to AI search, LLMs, AI Agents and more
 - [x.com/ChouinardJC](https://x.com/ChouinardJC)
 - [linkedin.com/in/jeanchristophechouinard](https://www.linkedin.com/in/jeanchristophechouinard)
 
+
+## Start
+
+```
+$ python3 -m venv venv 
+$ source venv/bin/activate 
+$ pip install -r requirements.txt
+```
+
 ## ChatGPT Bookmarklet
 
 - [Find bookmarklet code here.](./chatgpt-query-fanout-analyzer.js) 
