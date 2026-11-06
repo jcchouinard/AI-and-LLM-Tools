@@ -28,6 +28,12 @@ jobs:
       - run: python3 templates/pr-gate/tests/selftest.py
       - run: python3 templates/pr-gate/tests/repo_selftest.py
       - name: JSON manifests and modes parse
-        run: for f in .claude-plugin/plugin.json ../../.claude-plugin/marketplace.json templates/modes/*.json; do python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$f"; done
+        run: |
+          for f in .claude-plugin/plugin.json ../../.claude-plugin/marketplace.json templates/modes/*.json; do
+            python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$f"
+          done
       - name: Skill description stays small
-        run: test "$(sed -n 's/^description: //p' skills/new/SKILL.md | wc -w)" -le 40
+        run: |
+          words=$(sed -n 's/^description: //p' skills/new/SKILL.md | wc -w)
+          echo "skill description: $words words"
+          test "$words" -le 40
