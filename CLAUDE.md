@@ -16,12 +16,12 @@ Public repo for AI search, LLM, and AI agent tools, plus reusable Claude Code sk
 Always make git commits in this project with:
 
 User name: jcchouinard
-User email: jcchouinard.mkt@gmail.com
+User email: 40404922+jcchouinard@users.noreply.github.com
 
 Do not use any other identity (e.g. the global git config or a work email). Pass the identity explicitly on every commit, for example:
 
 ```
-git -c user.name="jcchouinard" -c user.email="jcchouinard.mkt@gmail.com" commit -m "..."
+git -c user.name="jcchouinard" -c user.email="40404922+jcchouinard@users.noreply.github.com" commit -m "..."
 ```
 
 Do not modify the global git config.
