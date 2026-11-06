@@ -5,11 +5,11 @@ disable-model-invocation: true
 argument-hint: "<name or path> [1|2|3|4] [one-line purpose]"
 ---
 
-# lean-start
+# create-project
 
 The script does all the work. Do not read the templates or scripts, and do not explain them. Keep your own messages to one or two lines.
 
-`LS` below means: `python3 -I "${CLAUDE_PLUGIN_ROOT}/scripts/lean_start.py"`
+`LS` below means: `python3 -I "${CLAUDE_PLUGIN_ROOT}/scripts/create_project.py"`
 
 ## 1. Arguments
 - First argument: project name or path. A bare name becomes `./<name>`, or `<projects root>/<name>` if the user set one. Missing: ask "Project name?" in plain text.

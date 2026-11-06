@@ -1,10 +1,14 @@
 {
   "name": "ai-and-llm-tools",
-  "owner": {"name": "Jean-Christophe Chouinard", "url": "https://www.jcchouinard.com/"},
+  "description": "Claude Code plugins by Jean-Christophe Chouinard: lean, safe project setups and AI tooling.",
+  "owner": {
+    "name": "Jean-Christophe Chouinard",
+    "url": "https://www.jcchouinard.com/"
+  },
   "plugins": [
     {
-      "name": "lean-start",
-      "source": "./plugins/lean-start",
+      "name": "create-project",
+      "source": "./plugins/create-project",
       "description": "Start lean, safe Claude Code projects: low-token modes, git account setup, token-gate, pr-gate, lockdown."
     }
   ]

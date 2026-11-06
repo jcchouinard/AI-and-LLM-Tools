@@ -1,4 +1,4 @@
-lean-start
+create-project
 Copyright (c) 2026 Jean-Christophe Chouinard. MIT License (see LICENSE at the repository root).
 
 templates/hooks/token_gate.py is a Python port of token-gate

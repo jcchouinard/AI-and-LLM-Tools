@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""lean-start: create a Claude Code project switched off as much as possible. Stdlib only, Python 3.10+.
+"""create-project: create a Claude Code project switched off as much as possible. Stdlib only, Python 3.10+.
 
 Subcommands (run with python3 -I):
-  setup      detect or save identities and the default location (~/.config/lean-start/config.json)
+  setup      detect or save identities and the default location (~/.config/create-project/config.json)
   inventory  list MCP servers, plugins and extras that mode 3 can enable (JSON)
   new        scaffold a project
   doctor     check a project against its mode
-  uninstall  remove the files lean-start wrote (from the manifest)
+  uninstall  remove the files create-project wrote (from the manifest)
 Exit codes: 0 ok, 1 bad input or refused, 2 git/gh/IO error.
 """
 import argparse
@@ -23,7 +23,7 @@ import sys
 VERSION = "1.0.0"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TPL = os.path.join(ROOT, "templates")
-CONFIG = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"), "lean-start", "config.json")
+CONFIG = os.path.join(os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"), "create-project", "config.json")
 HOME = os.path.realpath(os.path.expanduser("~"))
 REFUSED = [HOME, "/", os.path.join(HOME, "Documents"), os.path.join(HOME, "Desktop"),
            os.path.join(HOME, "Downloads"), os.path.join(HOME, ".claude")]
@@ -276,7 +276,7 @@ def git_rules(ident, mode_cfg, main, pr_gate):
 def launcher(mode, flags):
     q = " ".join(shlex.quote(x) for x in flags)
     return ("#!/bin/bash\n"
-            f"# lean-start mode {mode}: launches Claude Code in this project with everything else switched off.\n"
+            f"# create-project mode {mode}: launches Claude Code in this project with everything else switched off.\n"
             "# Extra arguments pass through, for example: .claude/start.command -c\n"
             'cd "$(dirname "$0")/.." || exit 1\n'
             f'exec claude {q} "$@"\n')
@@ -294,8 +294,8 @@ def setup_git(proj, ident, main, files):
         say(f"git identity (this repo only): {ident['git_name']} <{ident['git_email']}>")
     if run(["git", "rev-parse", "--verify", "HEAD"], proj, check=False).returncode != 0:
         run(["git", "add", "--"] + [f for f in files if os.path.exists(os.path.join(proj, f)) and not f.endswith(".local.json")], proj)
-        run(["git", "commit", "-q", "-m", "chore: scaffold with lean-start"], proj)
-        say(f"first commit on {main} (lean-start files only)")
+        run(["git", "commit", "-q", "-m", "chore: scaffold with create-project"], proj)
+        say(f"first commit on {main} (create-project files only)")
 
 
 def setup_remote(proj, ident, remote, main):
@@ -408,9 +408,9 @@ def cmd_new(a):
     for k, v in fills.items():
         body = body.replace("{{" + k + "}}", v)
     cm = w.path("CLAUDE.md")
-    if os.path.exists(cm) and "lean-start mode" not in open(cm).read():
-        w.text("CLAUDE.lean-start.md", body)
-        say("you already had a CLAUDE.md: wrote CLAUDE.lean-start.md, merge it by hand")
+    if os.path.exists(cm) and "create-project mode" not in open(cm).read():
+        w.text("CLAUDE.create-project.md", body)
+        say("you already had a CLAUDE.md: wrote CLAUDE.create-project.md, merge it by hand")
     else:
         w.text("CLAUDE.md", body)
 
@@ -425,9 +425,9 @@ def cmd_new(a):
 
     # launcher + manifest
     w.text(".claude/start.command", launcher(a.mode, launch), 0o755)
-    manifest = {"tool": "lean-start", "version": VERSION, "mode": a.mode, "identity": a.identity,
-                "created": datetime.date.today().isoformat(), "files": sorted(set(w.files + [".claude/lean-start.json"]))}
-    w.text(".claude/lean-start.json", json.dumps(manifest, indent=2) + "\n")
+    manifest = {"tool": "create-project", "version": VERSION, "mode": a.mode, "identity": a.identity,
+                "created": datetime.date.today().isoformat(), "files": sorted(set(w.files + [".claude/create-project.json"]))}
+    w.text(".claude/create-project.json", json.dumps(manifest, indent=2) + "\n")
 
     if a.dry_run:
         print(f"DRY RUN {proj} (mode {a.mode}: {mode_cfg['_label']})")
@@ -450,9 +450,9 @@ def cmd_new(a):
 # ---------------------------------------------------------------- doctor / uninstall
 def cmd_doctor(a):
     proj = os.path.realpath(a.dir)
-    man = load_json(os.path.join(proj, ".claude", "lean-start.json"), {})
+    man = load_json(os.path.join(proj, ".claude", "create-project.json"), {})
     if not man:
-        print("not a lean-start project (no .claude/lean-start.json)")
+        print("not a create-project project (no .claude/create-project.json)")
         return 1
     problems = []
     for f in man["files"]:
@@ -473,16 +473,16 @@ def cmd_doctor(a):
         got = run(["git", "config", "--local", "user.email"], proj, check=False).stdout.strip()
         if ident and got != ident.get("git_email"):
             problems.append(f"git email is '{got}', expected '{ident.get('git_email')}'")
-    print(f"mode {man['mode']}, lean-start {man['version']}, {len(man['files'])} files")
+    print(f"mode {man['mode']}, create-project {man['version']}, {len(man['files'])} files")
     print("\n".join(["- " + p for p in problems] + ["- warning: " + w for w in warnings]) or "OK")
     return 1 if problems else 0
 
 
 def cmd_uninstall(a):
     proj = os.path.realpath(a.dir)
-    man = load_json(os.path.join(proj, ".claude", "lean-start.json"), {})
+    man = load_json(os.path.join(proj, ".claude", "create-project.json"), {})
     if not man:
-        print("not a lean-start project")
+        print("not a create-project project")
         return 1
     for f in man["files"]:
         p = os.path.join(proj, f)
@@ -496,7 +496,7 @@ def cmd_uninstall(a):
 
 
 def main():
-    p = argparse.ArgumentParser(prog="lean-start")
+    p = argparse.ArgumentParser(prog="create-project")
     p.add_argument("--version", action="version", version=VERSION)
     sub = p.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("setup")

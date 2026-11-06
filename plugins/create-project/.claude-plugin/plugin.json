@@ -1,10 +1,10 @@
 {
-  "name": "lean-start",
-  "displayName": "lean-start",
+  "name": "create-project",
+  "displayName": "create-project",
   "version": "1.0.0",
   "description": "Start Claude Code projects with everything switched off except what you need: low-token modes, right git account, token-gate, pr-gate adversarial review, or a locked-down folder.",
   "author": {"name": "Jean-Christophe Chouinard", "url": "https://www.jcchouinard.com/"},
-  "homepage": "https://github.com/jcchouinard/AI-and-LLM-Tools/tree/main/plugins/lean-start",
+  "homepage": "https://github.com/jcchouinard/AI-and-LLM-Tools/tree/main/plugins/create-project",
   "repository": "https://github.com/jcchouinard/AI-and-LLM-Tools",
   "license": "MIT",
   "keywords": ["cost", "tokens", "scaffold", "security", "hooks"]

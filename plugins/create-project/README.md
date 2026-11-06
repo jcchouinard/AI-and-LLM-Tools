@@ -1,4 +1,4 @@
-# lean-start
+# create-project
 
 Start a Claude Code project with everything switched off except what you need. One command, at most three questions, and a new Terminal window opens with Claude running in the project.
 
@@ -11,25 +11,25 @@ Start a Claude Code project with everything switched off except what you need. O
 ## Install
 In Claude Code (2.1.275 or later):
 ```
-/plugin install lean-start --marketplace jcchouinard/AI-and-LLM-Tools
+/plugin install create-project --marketplace jcchouinard/AI-and-LLM-Tools
 ```
-Or in two steps: `/plugin marketplace add jcchouinard/AI-and-LLM-Tools`, then `/plugin install lean-start@ai-and-llm-tools`.
+Or in two steps: `/plugin marketplace add jcchouinard/AI-and-LLM-Tools`, then `/plugin install create-project@ai-and-llm-tools`.
 
 Without the plugin system:
 ```bash
 git clone --depth 1 https://github.com/jcchouinard/AI-and-LLM-Tools
-AI-and-LLM-Tools/plugins/lean-start/install.sh      # adds /lean-start, touches nothing else
+AI-and-LLM-Tools/plugins/create-project/install.sh      # adds /create-project, touches nothing else
 ```
 Requirements: Python 3.10+, git (modes 2 to 4), gh (only to create GitHub repos). Linux mode 4 also needs `bubblewrap` and `socat`. macOS and Linux; Windows through WSL2.
 
 ## Use
 ```
-/lean-start:new my-app                 # plugin install (clone install: /lean-start my-app)
-/lean-start:new my-app 2 "Price tracker for my shop"
+/create-project:new my-app                 # plugin install (clone install: /create-project my-app)
+/create-project:new my-app 2 "Price tracker for my shop"
 ```
 The first run detects your git and GitHub accounts and asks which to save. Then it asks the mode, the account and whether to create a GitHub repo, creates `./my-app`, and opens it in a new Terminal window. Reopen it any time with `my-app/.claude/start.command` (`-c` to continue the last session).
 
-Change defaults with `/lean-start:new --setup`, for example a projects folder so bare names go to `~/projects/<name>` instead of the current folder.
+Change defaults with `/create-project:new --setup`, for example a projects folder so bare names go to `~/projects/<name>` instead of the current folder.
 
 ## Modes
 | | 1. Low token | 2. Low token + git + review | 3. Balanced (pick) | 4. Locked down |
@@ -55,10 +55,10 @@ Change defaults with `/lean-start:new --setup`, for example a projects folder so
 .claude/skills/pr-gate/    modes 2 to 4
 .claude/lockdown.json      mode 4 command allowlist, edit it to allow more
 .claude/mcp.local.json     mode 3 picked servers (gitignored: server configs can hold API keys)
-.claude/lean-start.json    manifest of written files, used by doctor and uninstall
+.claude/create-project.json    manifest of written files, used by doctor and uninstall
 CLAUDE.md, .gitignore
 ```
-Nothing is overwritten silently: existing files are merged or backed up as `.bak`, an existing `CLAUDE.md` is left alone (a `CLAUDE.lean-start.md` is written next to it), and the first commit contains only lean-start's files.
+Nothing is overwritten silently: existing files are merged or backed up as `.bak`, an existing `CLAUDE.md` is left alone (a `CLAUDE.create-project.md` is written next to it), and the first commit contains only create-project's files.
 
 ## How the account is enforced
 - `git config --local user.name/email` in the new repo.
@@ -72,11 +72,11 @@ Limits: a script the agent writes and then runs with an allowed interpreter can 
 
 ## Commands
 ```
-python3 -I <plugin>/scripts/lean_start.py doctor [dir]      check a project
-python3 -I <plugin>/scripts/lean_start.py uninstall [dir]   remove lean-start files (keeps CLAUDE.md, .gitignore, settings unless --all)
-python3 -I <plugin>/scripts/lean_start.py new my-app --mode 1 --dry-run
+python3 -I <plugin>/scripts/create_project.py doctor [dir]      check a project
+python3 -I <plugin>/scripts/create_project.py uninstall [dir]   remove create-project files (keeps CLAUDE.md, .gitignore, settings unless --all)
+python3 -I <plugin>/scripts/create_project.py new my-app --mode 1 --dry-run
 ```
-Config lives in `~/.config/lean-start/config.json` (identities, projects root, extra CLAUDE.md rules such as `--extra-rule "No em dashes."`).
+Config lives in `~/.config/create-project/config.json` (identities, projects root, extra CLAUDE.md rules such as `--extra-rule "No em dashes."`).
 
 ## Tests
 ```

@@ -1,9 +1,9 @@
-name: lean-start
+name: create-project
 on:
   push:
-    paths: ["plugins/lean-start/**", ".claude-plugin/**", ".github/workflows/lean-start.yml"]
+    paths: ["plugins/create-project/**", ".claude-plugin/**", ".github/workflows/create-project.yml"]
   pull_request:
-    paths: ["plugins/lean-start/**", ".claude-plugin/**", ".github/workflows/lean-start.yml"]
+    paths: ["plugins/create-project/**", ".claude-plugin/**", ".github/workflows/create-project.yml"]
 permissions:
   contents: read
 jobs:
@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        working-directory: plugins/lean-start
+        working-directory: plugins/create-project
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""End-to-end tests for scripts/lean_start.py in a throwaway HOME. Run: python3 tests/test_scaffold.py"""
+"""End-to-end tests for scripts/create_project.py in a throwaway HOME. Run: python3 tests/test_scaffold.py"""
 import json
 import os
 import subprocess
 import sys
 import tempfile
 
-SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts", "lean_start.py")
+SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts", "create_project.py")
 fails = []
 
 
