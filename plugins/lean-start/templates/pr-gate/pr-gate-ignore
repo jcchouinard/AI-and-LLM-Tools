@@ -1,0 +1,3 @@
+# Path globs pr-gate skips. Keep this short: every entry is a blind spot.
+# Example: a test that intentionally contains injection samples
+# tests/fixtures/prompt_injection_samples/*

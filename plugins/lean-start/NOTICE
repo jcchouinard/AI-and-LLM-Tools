@@ -1,0 +1,7 @@
+lean-start
+Copyright (c) 2026 Jean-Christophe Chouinard. MIT License (see LICENSE at the repository root).
+
+templates/hooks/token_gate.py is a Python port of token-gate
+(https://github.com/jcchouinard/token-gate-tutorial, MIT), whose design was inspired by
+the shunt plugin in spotify/portal-ai-plugins (https://github.com/spotify/portal-ai-plugins),
+licensed under the Apache License 2.0. No code from that project is included.

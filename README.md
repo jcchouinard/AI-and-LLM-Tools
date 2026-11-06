@@ -23,6 +23,15 @@ $ pip install -r requirements.txt
 
 - `readme_generator.py`: AI agent that generates README.md file for a project (OpenAI API)
 
+## Plugins
+Install in Claude Code with one line (2.1.275 or later):
+
+```
+/plugin install lean-start --marketplace jcchouinard/AI-and-LLM-Tools
+```
+
+- [`lean-start`](plugins/lean-start/): start Claude Code projects with everything switched off except what you need. Four modes (low token, low token with git and adversarial review, balanced with picks, locked down), right git account, token-gate and pr-gate built in. About 75% less context per request than a default setup.
+
 ## Skills
 Public-ready Claude Code skills live in [`skills/`](skills/). Copy a folder into `~/.claude/skills/` to install it.
 

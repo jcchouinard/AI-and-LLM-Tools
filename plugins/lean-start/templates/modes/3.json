@@ -1,0 +1,35 @@
+{
+  "_label": "Balanced, pick what to enable",
+  "_git": true,
+  "_pr_gate": true,
+  "_lockdown": false,
+  "_disable_user_plugins": false,
+  "_picker": true,
+  "_launch": [
+    "--setting-sources",
+    "project,local",
+    "--model",
+    "sonnet",
+    "--effort",
+    "medium"
+  ],
+  "_claude_md_rules": [
+    "Read narrowly: grep first, then Read with offset/limit. For files over 350 lines use the file-summarizer subagent.",
+    "Use MCP tools only when the task needs them."
+  ],
+  "enableArtifact": false,
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.config/gh/**)",
+      "Edit(./.claude/**)"
+    ]
+  },
+  "env": {
+    "MAX_MCP_OUTPUT_TOKENS": "15000",
+    "CLAUDE_CODE_EFFORT_LEVEL": "medium"
+  }
+}

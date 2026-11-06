@@ -16,3 +16,6 @@ venv/
 !templates/**/*.example.json
 !templates/**/examples/*.json
 !templates/**/skeleton/*.txt
+# Plugin manifests and lean-start mode files
+!.claude-plugin/*.json
+!plugins/**/*.json

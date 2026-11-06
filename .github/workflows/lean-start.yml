@@ -1,0 +1,33 @@
+name: lean-start
+on:
+  push:
+    paths: ["plugins/lean-start/**", ".claude-plugin/**", ".github/workflows/lean-start.yml"]
+  pull_request:
+    paths: ["plugins/lean-start/**", ".claude-plugin/**", ".github/workflows/lean-start.yml"]
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.9", "3.13"]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: plugins/lean-start
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python3 tests/test_scaffold.py
+      - run: python3 tests/test_lockdown.py
+      - run: python3 tests/test_token_gate.py
+      - run: python3 templates/pr-gate/tests/selftest.py
+      - run: python3 templates/pr-gate/tests/repo_selftest.py
+      - name: JSON manifests and modes parse
+        run: for f in .claude-plugin/plugin.json ../../.claude-plugin/marketplace.json templates/modes/*.json; do python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$f"; done
+      - name: Skill description stays small
+        run: test "$(sed -n 's/^description: //p' skills/new/SKILL.md | wc -w)" -le 40
