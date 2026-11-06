@@ -1,0 +1,49 @@
+{
+  "_label": "Low token, git and adversarial review",
+  "_git": true,
+  "_pr_gate": true,
+  "_lockdown": false,
+  "_disable_user_plugins": true,
+  "_launch": [
+    "--setting-sources",
+    "project,local",
+    "--strict-mcp-config",
+    "--model",
+    "sonnet",
+    "--effort",
+    "medium",
+    "--tools",
+    "Bash,Read,Edit,Write,Agent,Skill"
+  ],
+  "_claude_md_rules": [
+    "Read narrowly: grep first, then Read with offset/limit. For files over 350 lines use the file-summarizer subagent.",
+    "No subagents, web search or broad repo sweeps unless asked.",
+    "Answer briefly. No recaps of what you just did."
+  ],
+  "model": "sonnet",
+  "effortLevel": "medium",
+  "enableArtifact": false,
+  "disableClaudeAiConnectors": true,
+  "permissions": {
+    "deny": [
+      "mcp__*",
+      "Workflow",
+      "DesignSync",
+      "Monitor",
+      "WebSearch",
+      "WebFetch",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.config/gh/**)",
+      "Edit(./.claude/**)"
+    ]
+  },
+  "env": {
+    "CLAUDE_CODE_EFFORT_LEVEL": "medium",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "haiku",
+    "BASH_MAX_OUTPUT_LENGTH": "15000",
+    "MAX_MCP_OUTPUT_TOKENS": "10000"
+  }
+}

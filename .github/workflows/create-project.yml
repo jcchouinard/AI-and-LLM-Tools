@@ -1,0 +1,39 @@
+name: create-project
+on:
+  push:
+    paths: ["plugins/create-project/**", ".claude-plugin/**", ".github/workflows/create-project.yml"]
+  pull_request:
+    paths: ["plugins/create-project/**", ".claude-plugin/**", ".github/workflows/create-project.yml"]
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.10", "3.13"]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: plugins/create-project
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python3 tests/test_scaffold.py
+      - run: python3 tests/test_lockdown.py
+      - run: python3 tests/test_token_gate.py
+      - run: python3 templates/pr-gate/tests/selftest.py
+      - run: python3 templates/pr-gate/tests/repo_selftest.py
+      - name: JSON manifests and modes parse
+        run: |
+          for f in .claude-plugin/plugin.json ../../.claude-plugin/marketplace.json templates/modes/*.json; do
+            python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$f"
+          done
+      - name: Skill description stays small
+        run: |
+          words=$(sed -n 's/^description: //p' skills/new/SKILL.md | wc -w)
+          echo "skill description: $words words"
+          test "$words" -le 40
