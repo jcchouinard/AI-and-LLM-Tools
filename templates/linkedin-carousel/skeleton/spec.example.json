@@ -1,0 +1,12 @@
+{
+  "brand": {"handle": "<YOUR_HANDLE_OR_DOMAIN>", "avatar": "img/avatar.png"},
+  "slides": [
+    {"img": "img/cover.png", "h": "<Product> to <em>Outcome</em>", "sub": "New update. Swipe."},
+    {"img": "img/step1.png", "h": "Do the <em>first step</em>", "sub": "One short line."},
+    {"img": "img/step2.png", "h": "Set your <em>options</em>", "sub": "One short line."},
+    {"img": "img/summary.png", "band": 600, "h": "What you <em>get</em>", "chips": ["Benefit one", "Benefit two", "Benefit three", "Benefit four"]},
+    {"img": "img/cta.png", "h": "Subscribe on <em>Platform</em>", "sub": "Follow for more updates.", "cta": "<YOUR_HANDLE_OR_DOMAIN>/subscribe"}
+  ],
+  "thumbnail": {"tag": "NEW TOOL", "lines": ["Line one", "line two", "<em>Highlight</em>"], "img": "img/step1.png"},
+  "twitter": {"slides": [1, 2, 4, 5], "text": "Hook line.\n\nOne line of value.\n\n<YOUR_HANDLE_OR_DOMAIN>"}
+}

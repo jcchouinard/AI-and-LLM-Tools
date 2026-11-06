@@ -12,3 +12,6 @@ pending/
 *template.ipynb
 *api_keys.py*
 venv/
+# Keep example specs in public templates
+!templates/**/*.example.json
+!templates/**/examples/*.json
