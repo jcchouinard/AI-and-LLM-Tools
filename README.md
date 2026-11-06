@@ -32,6 +32,7 @@ Public-ready Claude Code skills live in [`skills/`](skills/). Copy a folder into
 CLAUDE.md templates in [`templates/`](templates/). Copy one into a new project and tell Claude to read `CLAUDE.md` and recreate it.
 
 - [`linkedin-carousel`](templates/linkedin-carousel/): screenshots and text to a LinkedIn carousel PDF, slides, thumbnail, and X post
+- [`claude-usage-analyzer`](templates/claude-usage-analyzer/): analyze Claude Code session logs for cost, cache efficiency and tool usage, with a local dashboard
 - [`system-design-explainer`](templates/system-design-explainer/): turn a codebase into a visual technical design (public and internal modes)
 
 ## Related
