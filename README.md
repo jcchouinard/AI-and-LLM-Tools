@@ -22,3 +22,17 @@ $ pip install -r requirements.txt
 ## AI Agents
 
 - `readme_generator.py`: AI agent that generates README.md file for a project (OpenAI API)
+
+## Skills
+Public-ready Claude Code skills live in [`skills/`](skills/). Copy a folder into `~/.claude/skills/` to install it.
+
+- [`share-template`](skills/share-template/): turn a project and its Claude Code history into a PII-free, credential-free template zip (includes `scrub.py`)
+
+## Templates
+CLAUDE.md templates in [`templates/`](templates/). Copy one into a new project and tell Claude to read `CLAUDE.md` and recreate it.
+
+- [`linkedin-carousel`](templates/linkedin-carousel/): screenshots and text to a LinkedIn carousel PDF, slides, thumbnail, and X post
+- [`system-design-explainer`](templates/system-design-explainer/): turn a codebase into a visual technical design (public and internal modes)
+
+## Related
+- [token-gate-tutorial](https://github.com/jcchouinard/token-gate-tutorial): cut Claude Code token cost by blocking full reads of big files with a PreToolUse hook and a Haiku subagent

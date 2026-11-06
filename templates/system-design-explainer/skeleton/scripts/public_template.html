@@ -1,0 +1,67 @@
+/* Interactive explorer. Injected into a <script> tag by render.py; __DATA__ is replaced with the anonymized model. */
+(function(){
+const D=__DATA__;
+const root=document.getElementById('xp');if(!root||!(D.components||[]).length)return;
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const KC=k=>`var(--${['frontend','service','database','external','queue','job'].includes(k)?k:'service'})`;
+root.innerHTML=`<div class="tabs" id="tabs"><button class="tab on" data-m="-1">Explore parts</button>${(D.flows||[]).map((f,i)=>`<button class="tab" data-m="${i}">▶ ${esc(f.name)}</button>`).join('')}</div>
+<div class="stage"><svg id="svg"></svg><div class="legend" id="legend"></div><div class="cap" id="cap" style="display:none"></div></div><div class="side" id="side"></div>`;
+const C=D.components,E=D.edges||[],svg=document.getElementById('svg'),side=document.getElementById('side'),cap=document.getElementById('cap');
+const idx=Object.fromEntries(C.map((c,i)=>[c.id,i]));
+// layering: longest path from sources, cycle-safe
+const out={},indeg={};C.forEach(c=>{out[c.id]=[];indeg[c.id]=0});
+E.forEach(e=>{if(idx[e.from]!=null&&idx[e.to]!=null){out[e.from].push(e.to);indeg[e.to]++}});
+const col={};let q=C.filter(c=>!indeg[c.id]).map(c=>c.id);if(!q.length)q=[C[0].id];q.forEach(i=>col[i]=0);
+for(let n=0;n<C.length*3&&q.length;n++){const nx=[];q.forEach(u=>out[u].forEach(v=>{if((col[v]??-1)<col[u]+1&&col[u]+1<C.length){col[v]=col[u]+1;nx.push(v)}}));q=nx}
+C.forEach(c=>{if(col[c.id]==null)col[c.id]=0});
+const NW=210,NH=92,ncol=Math.max(...Object.values(col))+1,rows={};C.forEach(c=>(rows[col[c.id]]??=[]).push(c));
+const W=Math.max(1000,ncol*(NW+60)+60),maxr=Math.max(...Object.values(rows).map(r=>r.length)),H=Math.max(260,maxr*135+90);
+svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+const pos={};Object.entries(rows).forEach(([cI,arr])=>arr.forEach((c,r)=>{pos[c.id]={x:ncol>1?30+(+cI)*((W-60-NW)/(ncol-1)):(W-NW)/2,y:(H-arr.length*135)/2+r*135+(135-NH)/2+20}}));
+const ctr=id=>({x:pos[id].x+NW/2,y:pos[id].y+NH/2});
+function anchors(a,b,off=0){const A=ctr(a),B=ctr(b),dx=B.x-A.x;
+ if(Math.abs(dx)>30){const s=dx>0?1:-1;return{p0:{x:A.x+s*NW/2,y:A.y+off},p1:{x:B.x-s*NW/2,y:B.y+off},h:true,s}}
+ const s=B.y>A.y?1:-1;return{p0:{x:A.x+off,y:A.y+s*NH/2},p1:{x:B.x+off,y:B.y-s*NH/2},h:false,s}}
+const arcOf=(a,b)=>Math.abs(col[a]-col[b])>1?-62:0;
+function path(a,b,off=0){const {p0,p1,h,s}=anchors(a,b,off);const k=h?Math.abs(p1.x-p0.x)*.45:Math.abs(p1.y-p0.y)*.45,ar=arcOf(a,b);
+ return h?`M${p0.x},${p0.y+(ar?-NH/2+6:0)} C${p0.x+s*k},${p0.y+ar} ${p1.x-s*k},${p1.y+ar} ${p1.x},${p1.y+(ar?-NH/2+6:0)}`
+ :`M${p0.x},${p0.y} C${p0.x},${p0.y+s*k} ${p1.x},${p1.y-s*k} ${p1.x},${p1.y}`}
+const has=(a,b)=>E.some(e=>e.from==a&&e.to==b);
+let lab='',h=`<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#6b778c"/></marker></defs><g id="edges">`;
+E.forEach((e,i)=>{if(idx[e.from]==null||idx[e.to]==null)return;h+=`<path class="edge" id="e${i}" d="${path(e.from,e.to,has(e.to,e.from)?8:0)}" marker-end="url(#ar)"/>`;if(e.label)lab+=`<text class="elab" data-e="${i}">${esc(e.label)}</text>`});
+h+=`</g><g id="fl"></g>`;
+C.forEach(c=>{const p=pos[c.id],fs=c.name.length>20?17:c.name.length>16?20:24;
+ h+=`<g class="node" data-id="${c.id}" transform="translate(${p.x},${p.y})"><rect width="${NW}" height="${NH}" rx="12" stroke="${KC(c.kind)}"/><text class="k" x="${NW/2}" y="33">${esc(c.kind||'')}</text><text x="${NW/2}" y="64" style="font-size:${fs}px">${esc(c.name)}</text></g>`});
+svg.innerHTML=h+`<g id="labs">${lab}</g>`;
+svg.querySelectorAll('.elab').forEach(t=>{const pe=document.getElementById('e'+t.dataset.e),L=pe.getTotalLength(),pt=pe.getPointAtLength(L*.7);t.setAttribute('x',pt.x);t.setAttribute('y',pt.y-9)});
+document.getElementById('legend').innerHTML=[...new Set(C.map(c=>c.kind))].map(k=>`<span><i style="background:${KC(k)}"></i>${esc(k)}</span>`).join('');
+const nodes=[...svg.querySelectorAll('.node')],byId=Object.fromEntries(C.map(c=>[c.id,c]));
+const links=id=>[...new Set(E.filter(e=>e.from==id||e.to==id).map(e=>e.from==id?e.to:e.from))];
+let mode=-1,step=0,timer=null,sel=null;
+function focus(id){nodes.forEach(n=>n.classList.toggle('dim',!!id&&n.dataset.id!=id&&!links(id).includes(n.dataset.id)));
+ E.forEach((e,i)=>{const on=!!id&&(e.from==id||e.to==id);document.getElementById('e'+i)?.classList.toggle('hot',on);svg.querySelector(`.elab[data-e="${i}"]`)?.classList.toggle('show',on)})}
+function bindChips(){side.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>detail(b.dataset.go))}
+function detail(id){sel=id;nodes.forEach(n=>n.classList.toggle('sel',n.dataset.id==id));focus(id);const c=byId[id];
+ side.innerHTML=`<span class="badge" style="color:${KC(c.kind)};border-color:${KC(c.kind)}">${esc(c.kind)}</span><h3>${esc(c.name)}</h3><p>${esc(c.desc)}</p>${c.tech?`<div class="chips"><span class="chip">${esc(c.tech)}</span></div>`:''}
+ <h4>Connected to</h4><div class="chips">${links(id).map(l=>`<button class="chip" data-go="${l}">${esc(byId[l].name)}</button>`).join('')||'<span class="chip">nothing else</span>'}</div>`;bindChips()}
+function idle(){sel=null;nodes.forEach(n=>n.classList.remove('sel'));focus(null);
+ side.innerHTML=`<h3>${C.length} parts</h3><p>Hover or click a part.</p><div class="chips">${C.map(c=>`<button class="chip" data-go="${c.id}">${esc(c.name)}</button>`).join('')}</div>`;bindChips()}
+nodes.forEach(n=>{n.onmouseenter=()=>{if(mode<0&&!sel)focus(n.dataset.id)};n.onmouseleave=()=>{if(mode<0&&!sel)focus(null)};n.onclick=()=>{if(mode<0)detail(n.dataset.id)}});
+function stop(){clearInterval(timer);timer=null;const p=document.getElementById('play');if(p)p.textContent='▶ Play'}
+function show(i){const f=D.flows[mode];step=(i+f.steps.length)%f.steps.length;const st=f.steps[step],fl=document.getElementById('fl');
+ nodes.forEach(n=>n.classList.toggle('dim',n.dataset.id!=st.from&&n.dataset.id!=st.to));svg.querySelectorAll('.edge').forEach(e=>e.classList.remove('hot'));
+ fl.innerHTML=`<path class="edge hot" d="${path(st.from,st.to,has(st.to,st.from)?8:0)}" ${st.reply?'stroke-dasharray="7 6"':''} marker-end="url(#ar)"/><circle class="pulse" r="8"/>`;
+ const pe=fl.querySelector('path'),dot=fl.querySelector('circle'),L=pe.getTotalLength(),t0=performance.now();
+ (function mv(t){const k=Math.min(1,(t-t0)/900),pt=pe.getPointAtLength(L*k);dot.setAttribute('cx',pt.x);dot.setAttribute('cy',pt.y);if(k<1)requestAnimationFrame(mv)})(t0);
+ cap.style.display='block';cap.innerHTML=`<b style="color:var(--acc)">Step ${step+1}/${f.steps.length}</b> &nbsp; ${esc(byId[st.from]?.name)} → ${esc(byId[st.to]?.name)}: ${esc(st.msg)}`;
+ side.querySelectorAll('.steps li').forEach((li,j)=>li.classList.toggle('on',j==step))}
+function flowUI(){const f=D.flows[mode];side.innerHTML=`<h3>${esc(f.name)}</h3><p>${esc(f.desc)}</p><ol class="steps">${f.steps.map((s,i)=>`<li data-i="${i}"><b>${i+1}</b><span>${esc(s.msg)}</span></li>`).join('')}</ol>
+ <div class="ctl"><button class="btn" id="prev">◀</button><button class="btn" id="play">▶ Play</button><button class="btn" id="next">▶|</button></div>`;
+ side.querySelectorAll('.steps li').forEach(li=>li.onclick=()=>{stop();show(+li.dataset.i)});
+ document.getElementById('prev').onclick=()=>{stop();show(step-1)};document.getElementById('next').onclick=()=>{stop();show(step+1)};
+ document.getElementById('play').onclick=()=>{if(timer)return stop();document.getElementById('play').textContent='❚❚ Pause';show(step);timer=setInterval(()=>show(step+1),1500)};show(0)}
+document.querySelectorAll('#tabs .tab').forEach(t=>t.onclick=()=>{stop();document.querySelectorAll('#tabs .tab').forEach(x=>x.classList.toggle('on',x==t));mode=+t.dataset.m;document.getElementById('fl').innerHTML='';
+ if(mode<0){cap.style.display='none';idle()}else{nodes.forEach(n=>n.classList.remove('sel'));flowUI()}});
+document.addEventListener('keydown',e=>{if(mode<0)return;if(e.key=='ArrowRight'){stop();show(step+1)}if(e.key=='ArrowLeft'){stop();show(step-1)}});
+idle();
+})();

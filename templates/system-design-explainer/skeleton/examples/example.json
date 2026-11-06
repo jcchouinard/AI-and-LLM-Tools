@@ -1,0 +1,267 @@
+{
+  "title": "acme-course-hub",
+  "tagline": "Static course site with Stripe-powered access control.",
+  "sensitive_terms": [
+    "acme-hub.com",
+    "/me/access",
+    "checkout.session"
+  ],
+  "stats": [
+    {
+      "label": "services",
+      "value": 3
+    },
+    {
+      "label": "tables",
+      "value": 3
+    },
+    {
+      "label": "courses",
+      "value": 7
+    }
+  ],
+  "summary": "Learners buy a subscription, a webhook grants access, and a static hub gates course content by plan.",
+  "goals": [
+    {
+      "title": "Cheap to host",
+      "desc": "Static files on shared hosting, one small API."
+    },
+    {
+      "title": "Automatic access",
+      "desc": "Payment events grant and revoke access with no manual steps."
+    }
+  ],
+  "stack": [
+    {
+      "layer": "Frontend",
+      "items": [
+        "Vanilla JS",
+        "Static HTML build"
+      ]
+    },
+    {
+      "layer": "Backend",
+      "items": [
+        "Python",
+        "FastAPI"
+      ]
+    },
+    {
+      "layer": "Payments",
+      "items": [
+        "Stripe Payment Links",
+        "Webhooks"
+      ],
+      "public_items": [
+        "Hosted payment links",
+        "Webhooks"
+      ]
+    },
+    {
+      "layer": "Data",
+      "items": [
+        "SQLite"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "hub",
+      "name": "course-hub-static",
+      "public_name": "Static Web App",
+      "kind": "frontend",
+      "tech": "HTML/JS",
+      "path": "claude-code-101/_dev/hub/",
+      "desc": "Course catalog and gated lessons.",
+      "public_desc": "Course catalog and gated lessons."
+    },
+    {
+      "id": "api",
+      "name": "access-api",
+      "public_name": "Access API",
+      "kind": "service",
+      "tech": "FastAPI",
+      "path": "claude-code-101/api/main.py",
+      "desc": "Validates sessions and returns entitlements."
+    },
+    {
+      "id": "stripe",
+      "name": "Stripe",
+      "public_name": "Payment Provider",
+      "kind": "external",
+      "tech": "Stripe",
+      "path": "",
+      "desc": "Takes payment and emits events.",
+      "public_tech": "Third-party provider",
+      "public_desc": "Takes payment and emits events."
+    },
+    {
+      "id": "db",
+      "name": "access.sqlite",
+      "public_name": "Entitlement Store",
+      "kind": "database",
+      "tech": "SQLite",
+      "path": "claude-code-101/api/access.sqlite",
+      "desc": "Users, subscriptions, grants.",
+      "public_desc": "Accounts, plans, grants."
+    }
+  ],
+  "edges": [
+    {
+      "from": "hub",
+      "to": "api",
+      "label": "check access"
+    },
+    {
+      "from": "hub",
+      "to": "stripe",
+      "label": "checkout link"
+    },
+    {
+      "from": "stripe",
+      "to": "api",
+      "label": "webhook"
+    },
+    {
+      "from": "api",
+      "to": "db",
+      "label": "read/write"
+    }
+  ],
+  "flows": [
+    {
+      "name": "Purchase to access",
+      "public_name": "Purchase to access",
+      "desc": "How a payment turns into course access.",
+      "steps": [
+        {
+          "from": "hub",
+          "to": "stripe",
+          "msg": "Open payment link"
+        },
+        {
+          "from": "stripe",
+          "to": "api",
+          "msg": "checkout.session.completed",
+          "public_msg": "Payment completed event"
+        },
+        {
+          "from": "api",
+          "to": "db",
+          "msg": "Upsert subscription + grant"
+        },
+        {
+          "from": "hub",
+          "to": "api",
+          "msg": "GET /me/access",
+          "public_msg": "Request entitlements"
+        },
+        {
+          "from": "api",
+          "to": "hub",
+          "msg": "entitlements",
+          "reply": true
+        }
+      ]
+    }
+  ],
+  "data_model": [
+    {
+      "name": "users",
+      "public_name": "Account",
+      "purpose": "Learner identity",
+      "fields": [
+        {
+          "name": "id",
+          "public_name": "id",
+          "type": "int"
+        },
+        {
+          "name": "stripe_customer_id",
+          "public_name": "provider_ref",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "subscriptions",
+      "public_name": "Plan",
+      "purpose": "Active plan state",
+      "fields": [
+        {
+          "name": "id",
+          "public_name": "id",
+          "type": "int"
+        },
+        {
+          "name": "user_id",
+          "public_name": "account_id",
+          "type": "int"
+        },
+        {
+          "name": "current_period_end",
+          "public_name": "renews_at",
+          "type": "date"
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "from": "users",
+      "to": "subscriptions",
+      "card": "||--o{",
+      "label": "has"
+    }
+  ],
+  "api": [
+    {
+      "method": "GET",
+      "path": "/api/me/access",
+      "public_path": "/access",
+      "purpose": "Return entitlements for the session."
+    },
+    {
+      "method": "POST",
+      "path": "/api/stripe/webhook",
+      "public_path": "/events",
+      "purpose": "Receive payment events."
+    }
+  ],
+  "deploy": [
+    "Static build uploaded to shared hosting",
+    {
+      "text": "API runs on a Pi behind a tunnel at acme-hub.com",
+      "public_text": "API runs on a small self-managed host"
+    }
+  ],
+  "decisions": [
+    {
+      "title": "Hosted checkout",
+      "choice": "Payment Links",
+      "why": "No custom payment UI to maintain.",
+      "tradeoff": "Less control over the checkout flow."
+    }
+  ],
+  "security": [
+    "Webhook signatures verified",
+    "Entitlements checked server-side, never trusted from the client"
+  ],
+  "risks": [
+    "Single-host API is a single point of failure"
+  ],
+  "video_script": [
+    {
+      "scene": "1. Big picture",
+      "show": "Architecture diagram",
+      "say": "Three moving parts: a static site, a small API, and a payment provider."
+    },
+    {
+      "scene": "2. Follow the money",
+      "show": "Purchase flow",
+      "say": "Watch what happens after someone pays."
+    }
+  ],
+  "public_tagline": "Static course site with hosted-payment access control.",
+  "public_summary": "Learners buy a subscription, a webhook grants access, and a static hub gates course content by plan."
+}
