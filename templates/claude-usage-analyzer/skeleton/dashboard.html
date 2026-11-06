@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Code usage</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --surface-2: #f3f2ee;
+  --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --ring: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948;
+  --other: #b5b3ac; --good: #006300; --warn-ink: #8a5a00; --crit: #d03b3b;
+  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232322;
+    --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+    --other: #5e5d59; --good: #0ca30c; --warn-ink: #fab219; --crit: #e66767;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232322;
+  --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #008300; --s7: #9085e9; --s8: #e66767;
+  --other: #5e5d59; --good: #0ca30c; --warn-ink: #fab219; --crit: #e66767;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.45 var(--font); }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 24px 24px 64px; }
+header { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+h1 { font-size: 20px; margin: 0; font-weight: 650; }
+h2 { font-size: 15px; margin: 0 0 2px; font-weight: 600; }
+.sub { color: var(--ink-2); font-size: 13px; }
+.muted { color: var(--muted); }
+.spacer { flex: 1; }
+button, select, input { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--ring); border-radius: 6px; padding: 5px 10px; }
+button { cursor: pointer; }
+button:hover, select:hover { background: var(--surface-2); }
+button.on { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.filters { position: sticky; top: 0; z-index: 5; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 10px 0; margin-bottom: 8px; background: var(--page); border-bottom: 1px solid var(--grid); }
+.seg { display: inline-flex; }
+.seg button { border-radius: 0; margin-left: -1px; }
+.seg button:first-child { border-radius: 6px 0 0 6px; margin-left: 0; }
+.seg button:last-child { border-radius: 0 6px 6px 0; }
+input[type=date] { padding: 4px 6px; }
+input[type=search] { min-width: 200px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 10px; border-radius: 1000px; background: var(--surface-2); font-size: 12px; }
+.chip button { border: 0; padding: 0 6px; background: transparent; }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); }
+.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 8px; padding: 16px 18px; min-width: 0; }
+.card > .sub { margin-bottom: 12px; }
+.kpis { display: grid; grid-template-columns: minmax(240px, 1.4fr) repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin: 8px 0 16px; }
+.kpi .label { color: var(--ink-2); font-size: 13px; }
+.kpi .value { font-size: 26px; font-weight: 620; margin-top: 2px; }
+.kpi .note { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.kpi.hero .value { font-size: 52px; line-height: 1.05; font-weight: 650; letter-spacing: -0.02em; }
+.insights { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.insights li { padding: 12px 14px; border-radius: 6px; background: var(--surface-2); }
+.insights b { font-weight: 620; }
+.insights .why { color: var(--ink-2); font-size: 13px; margin-top: 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink-2); margin: 4px 0 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; flex: none; }
+svg { display: block; overflow: visible; }
+svg text { font: 11px var(--font); fill: var(--muted); font-variant-numeric: tabular-nums; }
+svg .lbl { fill: var(--ink-2); }
+svg .val { fill: var(--ink); font-weight: 600; }
+.hit { cursor: pointer; }
+.hit:hover .mk, .hit:focus .mk { opacity: 0.8; }
+.hit:focus { outline: none; }
+.hit:focus .hl { stroke: var(--ink); stroke-width: 1.5px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-weight: 600; color: var(--ink-2); padding: 6px 8px; border-bottom: 1px solid var(--axis); white-space: nowrap; cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--surface); }
+th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+th .arr { color: var(--muted); font-size: 10px; margin-left: 3px; }
+td { padding: 6px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+tr.row { cursor: pointer; }
+tr.row:hover td { background: var(--surface-2); }
+td.prompt { max-width: 300px; }
+td.nowrap { white-space: nowrap; }
+td.prompt div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+tr.detail td { background: var(--surface-2); white-space: normal; }
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px 24px; font-size: 13px; }
+.detail-grid .k { color: var(--muted); font-size: 12px; }
+.full-prompt { white-space: pre-wrap; margin: 0 0 10px; font-size: 13px; }
+.tbl-wrap { max-height: 640px; overflow: auto; }
+.more { margin-top: 10px; }
+.pill { display: inline-block; padding: 0 7px; border-radius: 1000px; background: var(--surface-2); font-size: 12px; white-space: nowrap; }
+.mdot { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; margin-right: 8px; }
+.tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+.segbar { display: flex; gap: 2px; height: 28px; margin: 8px 0 10px; }
+.segbar div { border-radius: 4px; color: #fff; font-size: 12px; font-weight: 600; padding: 5px 6px; overflow: hidden; white-space: nowrap; min-width: 0; }
+.segbar div.dark { color: #0b0b0b; }
+#tip { position: fixed; pointer-events: none; z-index: 50; background: var(--surface); color: var(--ink); border: 1px solid var(--ring); border-radius: 6px; padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.12); display: none; min-width: 160px; }
+#tip .t { color: var(--ink-2); margin-bottom: 4px; }
+#tip .r { display: flex; align-items: center; gap: 8px; }
+#tip .r b { margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; }
+#tip .key { width: 12px; height: 2px; border-radius: 1px; }
+.empty { color: var(--muted); padding: 24px 0; text-align: center; }
+footer { margin-top: 32px; color: var(--ink-2); font-size: 12px; }
+footer table { font-size: 12px; max-width: 720px; }
+.stale { opacity: .55; transition: opacity .1s; }
+a { color: var(--s1); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Claude Code usage</h1>
+    <span class="sub" id="scope"></span>
+    <span class="spacer"></span>
+    <button id="theme" title="Toggle light/dark">◐ Theme</button>
+  </header>
+  <div class="filters" id="filters"></div>
+  <div id="app"></div>
+  <footer id="foot"></footer>
+</div>
+<div id="tip"></div>
+<script>
+const D = /*__DATA__*/null;
+(function () {
+"use strict";
+const $ = (s) => document.querySelector(s);
+const put = (el, ...kids) => el.replaceChildren(...kids.flat().filter((k) => k != null && k !== false));
+const SVGNS = "http://www.w3.org/2000/svg";
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "style") el.style.cssText = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null && c !== false) el.append(c.nodeType ? c : document.createTextNode(String(c)));
+  return el;
+}
+function s(tag, attrs, ...kids) {
+  const el = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null) continue;
+    if (k === "style") el.style.cssText = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) if (c != null) el.append(c.nodeType ? c : document.createTextNode(String(c)));
+  return el;
+}
+
+// ---------- formatting ----------
+const money = (x) => {
+  if (x == null || isNaN(x)) return "";
+  const a = Math.abs(x);
+  if (a > 0 && a < 0.01) return "<$0.01";
+  if (a >= 1000) return "$" + Math.round(x).toLocaleString();
+  return "$" + x.toFixed(2);
+};
+const compact = (n) => {
+  const a = Math.abs(n);
+  if (a >= 1e9) return (n / 1e9).toFixed(a >= 1e10 ? 0 : 1) + "B";
+  if (a >= 1e6) return (n / 1e6).toFixed(a >= 1e7 ? 0 : 1) + "M";
+  if (a >= 1e4) return Math.round(n / 1e3) + "K";
+  if (a >= 1e3) return (n / 1e3).toFixed(1) + "K";
+  return String(Math.round(n));
+};
+const pct = (x, d = 0) => (isFinite(x) ? (x * 100).toFixed(d) + "%" : "");
+const int = (n) => Math.round(n).toLocaleString();
+const dur = (sec) => {
+  if (!sec) return "";
+  if (sec < 60) return sec + "s";
+  if (sec < 3600) return Math.round(sec / 60) + "m";
+  return (sec / 3600).toFixed(sec < 36000 ? 1 : 0) + "h";
+};
+const dayKey = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const fmtDay = (k, opts) => new Date(k + "T12:00:00").toLocaleDateString(undefined, opts || { month: "short", day: "numeric" });
+const fmtWhen = (iso) => { if (!iso) return ""; const d = new Date(iso); return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: false }); };
+const mixedInk = (slot) => slot === 3; // yellow takes dark label ink
+
+// ---------- data prep ----------
+const M = D.models, P = D.projects, S = D.sessions, T = D.tasks;
+const SLOTS = 7;
+M.forEach((m, i) => { m.color = (i < SLOTS && (m.priced || i < 3)) ? `var(--s${i + 1})` : "var(--other)"; m.slot = i < SLOTS ? i : -1; });
+T.forEach((t, i) => {
+  t.i = i;
+  t.date = t.ts ? new Date(t.ts) : null;
+  t.day = t.date ? dayKey(t.date) : null;
+  t.proj = S[t.s].p;
+  t.cost = 0; for (const k in t.m) t.cost += t.m[k][0];
+  t.lc = (t.text || "").toLowerCase();
+});
+const allDays = T.filter((t) => t.day).map((t) => t.day).sort();
+const firstDay = allDays[0], lastDay = allDays[allDays.length - 1];
+const CATS = [...new Set(T.map((t) => t.cat))].sort();
+const WHATIF = (D.meta.whatif || []);
+
+// ---------- state ----------
+const st = { range: "all", from: null, to: null, project: null, model: null, cat: null, q: "", taskSort: ["cost", -1], taskLimit: 50, open: null, sessSort: ["cost", -1], toolSort: ["calls", -1], tab: "tasks" };
+
+function rangeBounds() {
+  if (st.range === "custom") return [st.from, st.to];
+  if (st.range === "all") return [null, null];
+  const end = new Date(); const start = new Date(); start.setDate(end.getDate() - Number(st.range) + 1);
+  return [dayKey(start), null];
+}
+
+function slice() {
+  const [from, to] = rangeBounds();
+  const q = st.q.trim().toLowerCase();
+  const out = [];
+  for (const t of T) {
+    if (from && (!t.day || t.day < from)) continue;
+    if (to && (!t.day || t.day > to)) continue;
+    if (st.project != null && t.proj !== st.project) continue;
+    if (st.cat && t.cat !== st.cat) continue;
+    if (q && !t.lc.includes(q) && !(S[t.s].title || "").toLowerCase().includes(q)) continue;
+    let cost = t.cost, rows = t.m;
+    if (st.model != null) {
+      const r = t.m[st.model];
+      if (!r) continue;
+      cost = r[0]; rows = { [st.model]: r };
+    }
+    out.push({ t, cost, rows });
+  }
+  return out;
+}
+
+// ---------- tooltip ----------
+const tip = $("#tip");
+function showTip(ev, title, rows) {
+  tip.replaceChildren(h("div", { class: "t" }, title), ...rows.map((r) => h("div", { class: "r" },
+    r.color ? h("span", { class: "key", style: `background:${r.color}` }) : null, h("span", {}, r.label), h("b", {}, r.value))));
+  tip.style.display = "block";
+  moveTip(ev);
+}
+function moveTip(ev) {
+  let x, y;
+  if (ev.clientX != null && ev.type !== "focus") { x = ev.clientX; y = ev.clientY; }
+  else { const b = ev.currentTarget.getBoundingClientRect(); x = b.left + b.width / 2; y = b.top; }
+  const w = tip.offsetWidth, hh = tip.offsetHeight;
+  tip.style.left = Math.min(window.innerWidth - w - 8, Math.max(8, x + 14)) + "px";
+  tip.style.top = Math.max(8, y - hh - 12) + "px";
+}
+const hideTip = () => { tip.style.display = "none"; };
+function hoverable(g, title, rowsFn, onClick) {
+  g.setAttribute("tabindex", "0"); g.setAttribute("class", "hit");
+  g.addEventListener("pointerenter", (e) => showTip(e, title, rowsFn()));
+  g.addEventListener("pointermove", moveTip);
+  g.addEventListener("pointerleave", hideTip);
+  g.addEventListener("focus", (e) => showTip(e, title, rowsFn()));
+  g.addEventListener("blur", hideTip);
+  if (onClick) { g.addEventListener("click", onClick); g.addEventListener("keydown", (e) => { if (e.key === "Enter") onClick(e); }); }
+  return g;
+}
+
+// ---------- chart primitives ----------
+function niceTicks(v, n = 4) {
+  if (v <= 0) return { max: 1, step: 0.25 };
+  const raw = v / n, p = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * p).find((x) => x >= raw);
+  return { max: step * Math.ceil(v / step - 1e-9), step };
+}
+function niceMax(v) {
+  if (v <= 0) return 1;
+  const p = Math.pow(10, Math.floor(Math.log10(v)));
+  for (const m of [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (m * p >= v) return m * p;
+  return 10 * p;
+}
+// Rounded-top column path, square at baseline.
+function colPath(x, y, w, hgt, r) {
+  r = Math.min(r, w / 2, hgt);
+  return `M${x},${y + hgt}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + hgt}Z`;
+}
+function barPath(x, y, w, hgt, r) { // horizontal, rounded right end
+  r = Math.min(r, hgt / 2, w);
+  return `M${x},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + hgt - r}Q${x + w},${y + hgt} ${x + w - r},${y + hgt}H${x}Z`;
+}
+
+function stackedColumns(el, days, series, valueFmt) {
+  // days: [{key, vals: {seriesIdx: v}}], series: [{idx,name,color}] bottom-to-top
+  const W = Math.max(320, el.clientWidth), H = 230, ml = 44, mr = 8, mt = 10, mb = 26;
+  const pw = W - ml - mr, ph = H - mt - mb;
+  const nt = niceTicks(Math.max(0, ...days.map((d) => Object.values(d.vals).reduce((a, b) => a + b, 0))));
+  const max = nt.max;
+  const svg = s("svg", { width: W, height: H, role: "img", "aria-label": "Daily cost by model" });
+  for (let v = 0; v <= max + 1e-9; v += nt.step) {
+    const y = mt + ph - (v / max) * ph;
+    svg.append(s("line", { x1: ml, x2: W - mr, y1: y, y2: y, stroke: v ? "var(--grid)" : "var(--axis)", "stroke-width": 1 }));
+    svg.append(s("text", { x: ml - 6, y: y + 4, "text-anchor": "end" }, valueFmt(v)));
+  }
+  const n = days.length, band = pw / Math.max(1, n), bw = Math.max(2, Math.min(24, band - 2));
+  const every = Math.max(1, Math.ceil(n / Math.floor(pw / 56)));
+  days.forEach((d, i) => {
+    const x = ml + i * band + (band - bw) / 2;
+    const g = s("g");
+    g.append(s("rect", { x: ml + i * band, y: mt, width: band, height: ph, fill: "transparent" }));
+    let y = mt + ph;
+    const present = series.filter((sr) => d.vals[sr.idx] > 0);
+    present.forEach((sr, j) => {
+      const hgt = (d.vals[sr.idx] / max) * ph;
+      const top = j === present.length - 1;
+      const gap = j > 0 ? 2 : 0;
+      const hh = Math.max(0, hgt - gap);
+      if (hh > 0) g.append(top ? s("path", { class: "mk", d: colPath(x, y - hgt, bw, hh, 4), style: `fill:${sr.color}` })
+                         : s("rect", { class: "mk", x, y: y - hgt, width: bw, height: hh, style: `fill:${sr.color}` }));
+      y -= hgt;
+    });
+    if (i % every === 0) svg.append(s("text", { x: ml + i * band + band / 2, y: H - 8, "text-anchor": "middle" }, fmtDay(d.key)));
+    const total = Object.values(d.vals).reduce((a, b) => a + b, 0);
+    hoverable(g, fmtDay(d.key, { weekday: "short", month: "short", day: "numeric" }) + "  ·  " + valueFmt(total, true),
+      () => series.filter((sr) => d.vals[sr.idx] > 0).reverse().map((sr) => ({ color: sr.color, label: sr.name, value: valueFmt(d.vals[sr.idx], true) })),
+      () => { st.range = "custom"; st.from = st.to = d.key; render(); });
+    svg.append(g);
+  });
+  el.replaceChildren(svg);
+}
+
+function hbars(el, items, opts) {
+  // items: [{label, value, color, tipRows, onClick, sub}]
+  const W = Math.max(300, el.clientWidth), row = 26, lw = opts.labelWidth || 150, vw = 70;
+  const H = items.length * row + 4;
+  const max = Math.max(...items.map((d) => d.value), 0) || 1;
+  const svg = s("svg", { width: W, height: H, role: "img", "aria-label": opts.title || "" });
+  const subW = items.some((d) => d.sub) ? (opts.subWidth || 120) : 0;
+  const pw = W - lw - vw - subW - 8;
+  svg.append(s("line", { x1: lw, x2: lw, y1: 0, y2: H, stroke: "var(--axis)", "stroke-width": 1 }));
+  items.forEach((d, i) => {
+    const y = i * row + 4, bh = Math.min(18, row - 6), w = Math.max(d.value > 0 ? 2 : 0, (d.value / max) * pw);
+    const g = s("g");
+    g.append(s("rect", { x: 0, y: y - 2, width: W, height: row, fill: "transparent" }));
+    const lab = d.label.length > 24 ? d.label.slice(0, 23) + "…" : d.label;
+    g.append(s("text", { class: "lbl", x: lw - 8, y: y + bh / 2 + 4, "text-anchor": "end" }, lab));
+    if (w > 0) g.append(s("path", { class: "mk", d: barPath(lw + 1, y, w, bh, 4), style: `fill:${d.color || "var(--s1)"}` }));
+    g.append(s("text", { class: "val", x: lw + 1 + w + 6, y: y + bh / 2 + 4 }, opts.fmt(d.value)));
+    if (d.sub) g.append(s("text", { x: W - 2, y: y + bh / 2 + 4, "text-anchor": "end" }, d.sub));
+    hoverable(g, d.label, () => d.tipRows || [{ label: opts.valueName || "Value", value: opts.fmt(d.value) }], d.onClick);
+    svg.append(g);
+  });
+  el.replaceChildren(svg);
+}
+
+function columns(el, items, opts) {
+  // single-series columns with category labels: [{label, value, tipRows}]
+  const W = Math.max(300, el.clientWidth), H = opts.height || 200, ml = 40, mr = 8, mt = 18, mb = 26;
+  const pw = W - ml - mr, ph = H - mt - mb;
+  const nt = niceTicks(Math.max(0, ...items.map((d) => d.value)));
+  const max = nt.max;
+  const svg = s("svg", { width: W, height: H, role: "img", "aria-label": opts.title || "" });
+  for (let v = 0; v <= max + 1e-9; v += nt.step) {
+    const y = mt + ph - (v / max) * ph;
+    svg.append(s("line", { x1: ml, x2: W - mr, y1: y, y2: y, stroke: v ? "var(--grid)" : "var(--axis)", "stroke-width": 1 }));
+    svg.append(s("text", { x: ml - 6, y: y + 4, "text-anchor": "end" }, opts.axisFmt(v)));
+  }
+  const band = pw / items.length, bw = Math.min(40, band - 8);
+  items.forEach((d, i) => {
+    const x = ml + i * band + (band - bw) / 2, hgt = (d.value / max) * ph;
+    const g = s("g");
+    g.append(s("rect", { x: ml + i * band, y: mt, width: band, height: ph, fill: "transparent" }));
+    if (hgt > 0) g.append(s("path", { class: "mk", d: colPath(x, mt + ph - hgt, bw, hgt, 4), style: `fill:${opts.color || "var(--s1)"}` }));
+    if (opts.labelFmt) g.append(s("text", { class: "val", x: x + bw / 2, y: mt + ph - hgt - 5, "text-anchor": "middle" }, opts.labelFmt(d.value)));
+    g.append(s("text", { x: x + bw / 2, y: H - 8, "text-anchor": "middle" }, d.label));
+    hoverable(g, d.title || d.label, () => d.tipRows, d.onClick);
+    svg.append(g);
+  });
+  el.replaceChildren(svg);
+}
+
+function legend(series, onClick) {
+  return h("div", { class: "legend" }, series.map((sr) => h("span", { onclick: () => onClick && onClick(sr) },
+    h("span", { class: "sw", style: `background:${sr.color}` }), sr.name)));
+}
+
+function sortableTable(cols, rows, sortState, opts) {
+  const [key, dir] = sortState;
+  const col = cols.find((c) => c.key === key) || cols[0];
+  const get = col.sort || ((r) => r[col.key]);
+  rows = rows.slice().sort((a, b) => {
+    const va = get(a), vb = get(b);
+    if (va == null) return 1; if (vb == null) return -1;
+    return (va < vb ? -1 : va > vb ? 1 : 0) * dir;
+  });
+  const total = rows.length;
+  if (opts.limit) rows = rows.slice(0, opts.limit);
+  const thead = h("tr", {}, cols.map((c) => h("th", {
+    class: c.num ? "num" : null, title: c.help || null,
+    onclick: () => { if (sortState[0] === c.key) sortState[1] *= -1; else { sortState[0] = c.key; sortState[1] = c.num ? -1 : 1; } render(); },
+  }, c.label, c.key === key ? h("span", { class: "arr" }, dir < 0 ? "▼" : "▲") : null)));
+  const body = [];
+  for (const r of rows) {
+    const tr = h("tr", { class: opts.onRow ? "row" : null, onclick: opts.onRow ? () => opts.onRow(r) : null },
+      cols.map((c) => { const v = c.render ? c.render(r) : r[c.key]; return h("td", { class: (c.num ? "num " : "") + (c.cls || "") }, v); }));
+    body.push(tr);
+    if (opts.detail && opts.isOpen && opts.isOpen(r)) body.push(h("tr", { class: "detail" }, h("td", { colspan: cols.length }, opts.detail(r))));
+  }
+  const wrap = h("div", {}, h("div", { class: "tbl-wrap" }, h("table", {}, h("thead", {}, thead), h("tbody", {}, body))));
+  if (opts.limit && total > opts.limit) wrap.append(h("div", { class: "more" },
+    h("button", { onclick: opts.onMore }, `Show ${Math.min(100, total - opts.limit)} more`), h("span", { class: "muted" }, `  ${int(opts.limit)} of ${int(total)}`)));
+  if (!total) wrap.append(h("div", { class: "empty" }, "Nothing matches these filters."));
+  return wrap;
+}
+
+// ---------- pricing helpers ----------
+function reprice(r, rates) { return (r[1] * rates.in + r[2] * rates.out + r[3] * rates.read + r[4] * rates.w5 + r[5] * rates.w1) / 1e6; }
+function cacheSavings(rows) {
+  let saved = 0;
+  for (const [mi, r] of rows) {
+    const m = M[mi]; if (!m.rates) continue;
+    const R = m.rates;
+    saved += (r[3] * (R.in - R.read) - r[4] * (R.w5 - R.in) - r[5] * (R.w1 - R.in)) / 1e6;
+  }
+  return saved;
+}
+
+// ---------- filters ----------
+function renderFilters() {
+  const f = $("#filters");
+  const ranges = [["7", "7 days"], ["30", "30 days"], ["90", "90 days"], ["all", "All time"]];
+  const [from, to] = rangeBounds();
+  const projOpts = P.map((p, i) => [i, p.name]).sort((a, b) => a[1].localeCompare(b[1]));
+  put(f,
+    h("div", { class: "seg" }, ranges.map(([k, l]) => h("button", { class: st.range === k ? "on" : null, onclick: () => { st.range = k; st.taskLimit = 50; render(); } }, l))),
+    h("input", { type: "date", value: from || firstDay || "", min: firstDay, max: lastDay, title: "From", onchange: (e) => { st.range = "custom"; st.from = e.target.value || null; st.to = st.to || to; render(); } }),
+    h("span", { class: "muted" }, "to"),
+    h("input", { type: "date", value: to || lastDay || "", min: firstDay, max: lastDay, title: "To", onchange: (e) => { st.range = "custom"; st.to = e.target.value || null; st.from = st.from || from; render(); } }),
+    selectBox("All projects", projOpts, st.project, (v) => { st.project = v; }),
+    selectBox("All models", M.map((m, i) => [i, m.name]).filter(([i]) => M[i].priced && T.some((t) => t.m[i])), st.model, (v) => { st.model = v; }),
+    selectBox("All task types", CATS.map((c) => [c, c]), st.cat, (v) => { st.cat = v; }, true),
+    h("input", { type: "search", placeholder: "Search prompts and session titles", value: st.q, oninput: debounce((e) => { st.q = e.target.value; st.taskLimit = 50; render(true); }, 150) }),
+    (st.project != null || st.model != null || st.cat || st.q || st.range !== "all") ? h("button", { onclick: () => { Object.assign(st, { range: "all", from: null, to: null, project: null, model: null, cat: null, q: "" }); render(); } }, "Reset") : null,
+  );
+}
+function selectBox(allLabel, opts, cur, set, isString) {
+  return h("select", { onchange: (e) => { const v = e.target.value; set(v === "" ? null : isString ? v : Number(v)); st.taskLimit = 50; render(); } },
+    h("option", { value: "" }, allLabel), opts.map(([v, l]) => h("option", { value: v, selected: cur != null && String(cur) === String(v) }, l)));
+}
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+// ---------- main render ----------
+let lastFocus = null;
+function render(keepFilters) {
+  hideTip();
+  if (!keepFilters) renderFilters();
+  const X = slice();
+  const app = $("#app");
+  const total = X.reduce((a, x) => a + x.cost, 0);
+  const real = X.filter((x) => !x.t.bg);
+
+  // rollups
+  const byModel = new Map(), byProj = new Map(), byDay = new Map(), byCat = new Map(), bySess = new Map(), byTool = new Map();
+  const ctx = D.meta.ctx_buckets.map(() => [0, 0]);
+  let calls = 0, subCalls = 0, subCost = 0, errTasks = 0, errCost = 0, toks = [0, 0, 0, 0, 0];
+  const allRows = [];
+  for (const x of X) {
+    const t = x.t;
+    for (const [mi, r] of Object.entries(x.rows)) {
+      allRows.push([mi, r]);
+      const bm = byModel.get(mi) || { cost: 0, calls: 0, tok: [0, 0, 0, 0, 0], tasks: 0 };
+      bm.cost += r[0]; bm.calls += r[6]; bm.tasks++; for (let k = 0; k < 5; k++) { bm.tok[k] += r[k + 1]; toks[k] += r[k + 1]; }
+      byModel.set(mi, bm);
+      if (t.day) { const d = byDay.get(t.day) || {}; d[mi] = (d[mi] || 0) + r[0]; byDay.set(t.day, d); }
+    }
+    const bp = byProj.get(t.proj) || { cost: 0, tasks: 0, sess: new Set(), models: {} };
+    bp.cost += x.cost; if (!t.bg) bp.tasks++; bp.sess.add(t.s);
+    for (const [mi, r] of Object.entries(x.rows)) bp.models[mi] = (bp.models[mi] || 0) + r[0];
+    byProj.set(t.proj, bp);
+    if (!t.bg) {
+      const bc = byCat.get(t.cat) || { cost: 0, n: 0, turns: 0 }; bc.cost += x.cost; bc.n++; bc.turns += t.calls; byCat.set(t.cat, bc);
+    }
+    const bs = bySess.get(t.s) || { cost: 0, tasks: 0, calls: 0, first: t.ts, last: t.ts, models: {}, dur: 0 };
+    bs.cost += x.cost; if (!t.bg) bs.tasks++; bs.calls += t.calls + t.sub; bs.dur += t.dur || 0;
+    if (t.ts && (!bs.first || t.ts < bs.first)) bs.first = t.ts; if (t.ts && (!bs.last || t.ts > bs.last)) bs.last = t.ts;
+    for (const [mi, r] of Object.entries(x.rows)) bs.models[mi] = (bs.models[mi] || 0) + r[0];
+    bySess.set(t.s, bs);
+    for (const [name, [c, e]] of Object.entries(t.tools || {})) {
+      const bt = byTool.get(name) || { calls: 0, errs: 0, tasks: 0 }; bt.calls += c; bt.errs += e; bt.tasks++; byTool.set(name, bt);
+    }
+    const share = t.cost ? x.cost / t.cost : 0;
+    t.cb.forEach((b, i) => { ctx[i][0] += b[0] * share; ctx[i][1] += b[1] * share; });
+    calls += t.calls; subCalls += t.sub;
+    if (t.sub) subCost += x.cost * t.sub / Math.max(1, t.calls + t.sub);
+    if (t.errs >= 3) { errTasks++; errCost += x.cost; }
+  }
+  const days = [...byDay.keys()].sort();
+  const activeDays = days.length;
+  const turnsList = real.filter((x) => x.t.calls > 0).map((x) => x.t.calls).sort((a, b) => a - b);
+  const q = (arr, p) => arr.length ? arr[Math.min(arr.length - 1, Math.floor(arr.length * p))] : 0;
+  const medTurns = q(turnsList, 0.5), p90Turns = q(turnsList, 0.9);
+  const costsSorted = real.map((x) => x.cost).sort((a, b) => b - a);
+  const medCost = costsSorted.length ? costsSorted[Math.floor(costsSorted.length / 2)] : 0;
+  const inputAll = toks[0] + toks[2] + toks[3] + toks[4];
+  const hitRate = inputAll ? toks[2] / inputAll : 0;
+  const saved = cacheSavings(allRows);
+  const modelOrder = [...byModel.entries()].filter(([mi, v]) => M[mi].priced || v.cost >= 0.005).sort((a, b) => b[1].cost - a[1].cost);
+  const projOrder = [...byProj.entries()].sort((a, b) => b[1].cost - a[1].cost);
+
+  // scope text
+  const [from, to] = rangeBounds();
+  const dFrom = from || days[0], dTo = to || days[days.length - 1];
+  $("#scope").textContent = X.length ? `${fmtDay(dFrom)} to ${fmtDay(dTo, { month: "short", day: "numeric", year: "numeric" })} · ${int(bySess.size)} sessions · ${int(real.length)} tasks · ${int(calls + subCalls)} API calls` : "";
+
+  const nodes = [];
+  // KPIs
+  const perDay = activeDays ? total / activeDays : 0;
+  nodes.push(h("div", { class: "kpis" },
+    kpi("Total cost", money(total), D.meta.recon && st.range === "all" && st.project == null && st.model == null && !st.cat && !st.q
+      ? `Within ${pct(Math.abs(D.meta.recon.ours - D.meta.recon.claude_code) / D.meta.recon.claude_code, 1)} of Claude Code's own tracker` : "API list-price equivalent", true),
+    kpi("Per active day", money(perDay), `${activeDays} active days · ~${money(perDay * 21)} per 21-day month`),
+    kpi("Tasks", int(real.length), `median ${money(medCost)} each`),
+    kpi("Turns per task", medTurns ? String(medTurns) : "", `median · 1 in 10 takes ${p90Turns}+`),
+    kpi("Cache hit rate", pct(hitRate, 1), `saved ~${money(saved)} vs no caching`),
+    kpi("Subagents", pct(total ? subCost / total : 0), `${int(subCalls)} calls, ~${money(subCost)}`),
+  ));
+
+  if (!X.length) { app.replaceChildren(...nodes, h("div", { class: "card empty" }, "Nothing matches these filters.")); return; }
+
+  // Insights
+  nodes.push(card("What stands out", "Computed from the slice you're looking at. Change a filter and these update.",
+    h("ul", { class: "insights" }, insights({ total, modelOrder, projOrder, costsSorted, medTurns, p90Turns, real, ctx, hitRate, saved, subCost, errTasks, errCost, allRows, X }))));
+
+  // Daily
+  const series = modelOrder.map(([mi]) => ({ idx: mi, name: M[mi].name, color: M[mi].color })).reverse();
+  const dayList = [];
+  if (days.length) {
+    const start = new Date((from || days[0]) + "T12:00:00"), end = new Date((to || days[days.length - 1]) + "T12:00:00");
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) { const k = dayKey(d); dayList.push({ key: k, vals: byDay.get(k) || {} }); }
+  }
+  const dailyEl = h("div");
+  nodes.push(card("Cost per day, by model", "Hover a day for the breakdown. Click to zoom to that day.",
+    legend(series.slice().reverse(), (sr) => { st.model = st.model === Number(sr.idx) ? null : Number(sr.idx); render(); }), dailyEl));
+
+  // Models + projects
+  const modelEl = h("div"), projEl = h("div");
+  const segbar = h("div", { class: "segbar", role: "img", "aria-label": "Share of cost by model" },
+    modelOrder.filter(([, v]) => v.cost / total >= 0.005).map(([mi, v]) => {
+      const share = v.cost / total;
+      const d = h("div", { class: mixedInk(M[mi].slot) ? "dark" : null, style: `flex:${share} 1 0;background:${M[mi].color}`, title: `${M[mi].name}: ${money(v.cost)} (${pct(share, 1)})` }, share > 0.07 ? pct(share) : "");
+      return d;
+    }));
+  const modelTable = sortableTable([
+    { key: "name", label: "Model", render: (r) => h("span", { class: "mdot" }, h("span", { class: "sw", style: `background:${r.color}` }), r.name) },
+    { key: "cost", label: "Cost", num: true, render: (r) => money(r.cost) },
+    { key: "share", label: "Share", num: true, render: (r) => pct(r.share, 1) },
+    { key: "calls", label: "Calls", num: true, render: (r) => int(r.calls) },
+    { key: "per", label: "$/call", num: true, render: (r) => money(r.per) },
+    { key: "read", label: "Cache read", num: true, render: (r) => compact(r.read), help: "Tokens served from cache" },
+    { key: "write", label: "Cache write", num: true, render: (r) => compact(r.write), help: "Tokens written to cache (5m + 1h)" },
+  ], modelOrder.map(([mi, v]) => ({ mi, name: M[mi].name + (M[mi].priced ? "" : " (not priced)"), color: M[mi].color, cost: v.cost, share: v.cost / total, calls: v.calls, per: v.calls ? v.cost / v.calls : null, out: v.tok[1], read: v.tok[2], write: v.tok[3] + v.tok[4] })),
+    st.modelSort || (st.modelSort = ["cost", -1]), { onRow: (r) => { st.model = st.model === Number(r.mi) ? null : Number(r.mi); render(); } });
+  nodes.push(h("div", { class: "grid g2" },
+    card("Which model cost what", "Click a model to filter everything to it.", segbar, modelTable),
+    card("Which project cost the most", `Click a project to drill in. ${projOrder.length} project${projOrder.length === 1 ? "" : "s"} in this slice.`, projEl)));
+
+  // turns histogram + task types
+  const BK = [[1, 1, "1"], [2, 3, "2-3"], [4, 7, "4-7"], [8, 15, "8-15"], [16, 31, "16-31"], [32, 63, "32-63"], [64, 1e9, "64+"]];
+  const hist = BK.map(([lo, hi, label]) => {
+    const xs = real.filter((x) => x.t.calls >= lo && x.t.calls <= hi);
+    const c = xs.reduce((a, x) => a + x.cost, 0);
+    return { label, value: xs.length, cost: c, avg: xs.length ? c / xs.length : 0 };
+  });
+  const histEl = h("div"), catEl = h("div");
+  const histTable = h("table", {}, h("thead", {}, h("tr", {}, h("th", {}, "Turns"), h("th", { class: "num" }, "Tasks"), h("th", { class: "num" }, "Total cost"), h("th", { class: "num" }, "Share"), h("th", { class: "num" }, "Avg per task"))),
+    h("tbody", {}, hist.map((b) => h("tr", {}, h("td", {}, b.label), h("td", { class: "num" }, int(b.value)), h("td", { class: "num" }, money(b.cost)), h("td", { class: "num" }, pct(total ? b.cost / total : 0)), h("td", { class: "num" }, money(b.avg))))));
+  nodes.push(h("div", { class: "grid g2" },
+    card("How many turns tasks take", "A task is one prompt plus every API call Claude made to answer it (subagents counted separately).", histEl, histTable),
+    card("What kind of work costs the most", "Task type is inferred from the prompt's wording. Click a bar to filter.", catEl)));
+
+  // context + what-if
+  const ctxEl = h("div");
+  const ctxRows = D.meta.ctx_buckets.map((label, i) => ({ label, calls: ctx[i][0], cost: ctx[i][1], per: ctx[i][0] ? ctx[i][1] / ctx[i][0] : 0 }));
+  const wi = whatIf(allRows, total);
+  const simpleTable = (heads, rows) => h("table", {},
+    h("thead", {}, h("tr", {}, heads.map((x, i) => h("th", { class: i ? "num" : null }, x)))),
+    h("tbody", {}, rows.map((cells) => h("tr", {}, cells.map((c, i) => h("td", { class: i ? "num" : null }, c))))));
+  const ctxTable = simpleTable(["Context", "Calls", "Cost", "Share", "$/call"],
+    ctxRows.map((r) => [r.label, int(r.calls), money(r.cost), pct(total ? r.cost / total : 0), money(r.per)]));
+  const wiTable = simpleTable(["Everything on", "Cost", "vs actual"],
+    wi.map((r) => [r.name, money(r.cost), h("span", { style: `color:${r.delta < 0 ? "var(--good)" : "var(--ink-2)"}` }, (r.delta >= 0 ? "+" : "") + pct(r.delta))]));
+  nodes.push(h("div", { class: "grid g2" },
+    card("Why long sessions get expensive", "Every turn re-sends the whole conversation. Cost per API call by how much context it carried.", ctxEl, ctxTable),
+    card("What if this ran on one model?", "Same tokens, re-priced at each model's list price. Ignores quality and speed differences, so treat it as a bound, not advice.", wiTable)));
+
+  // tabs: tasks / sessions / tools
+  const tabs = h("div", { class: "tabs" }, [["tasks", `Tasks (${int(real.length)})`], ["sessions", `Sessions (${int(bySess.size)})`], ["tools", `Tools (${int(byTool.size)})`]].map(([k, l]) =>
+    h("button", { class: st.tab === k ? "on" : null, onclick: () => { st.tab = k; render(true); } }, l)));
+  let tabBody;
+  if (st.tab === "tasks") tabBody = tasksTable(X);
+  else if (st.tab === "sessions") tabBody = sessionsTable(bySess);
+  else tabBody = toolsTable(byTool);
+  nodes.push(card("Drill down", st.tab === "tasks" ? "Click a row for details. Sort by any column." : "Sort by any column.", tabs, tabBody));
+
+  app.replaceChildren(...nodes);
+
+  // draw charts after layout so widths are known
+  stackedColumns(dailyEl, dayList, series, (v, exact) => exact ? money(v) : (v >= 1000 ? "$" + compact(v) : "$" + (v < 10 && v % 1 ? v.toFixed(1) : Math.round(v))));
+  hbars(projEl, projOrder.slice(0, 15).map(([pi, v]) => ({
+    label: P[pi].name, value: v.cost, sub: `${v.tasks} tasks`,
+    tipRows: [{ label: "Cost", value: money(v.cost) }, { label: "Share", value: pct(v.cost / total, 1) }, { label: "Sessions", value: int(v.sess.size) }, { label: "Tasks", value: int(v.tasks) }, { label: "Per task", value: money(v.cost / Math.max(1, v.tasks)) }]
+      .concat(Object.entries(v.models).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([mi, c]) => ({ color: M[mi].color, label: M[mi].name, value: money(c) }))),
+    onClick: () => { st.project = st.project === pi ? null : pi; st.taskLimit = 50; render(); },
+  })), { fmt: money, title: "Cost by project", labelWidth: 170 });
+  if (projOrder.length > 15) projEl.append(h("div", { class: "muted", style: "font-size:12px;margin-top:6px" }, `+ ${projOrder.length - 15} smaller projects (see the project filter)`));
+  columns(histEl, hist.map((b) => ({ label: b.label, value: b.value, title: `${b.label} turns`, tipRows: [{ label: "Tasks", value: int(b.value) }, { label: "Cost", value: money(b.cost) }, { label: "Avg per task", value: money(b.avg) }] })),
+    { axisFmt: (v) => compact(v), labelFmt: (v) => v ? compact(v) : "", title: "Tasks by number of turns", height: 190 });
+  hbars(catEl, [...byCat.entries()].sort((a, b) => b[1].cost - a[1].cost).map(([c, v]) => ({
+    label: c, value: v.cost, sub: `${v.n} tasks · ${(v.turns / v.n).toFixed(1)} turns`,
+    tipRows: [{ label: "Cost", value: money(v.cost) }, { label: "Tasks", value: int(v.n) }, { label: "Avg cost", value: money(v.cost / v.n) }, { label: "Avg turns", value: (v.turns / v.n).toFixed(1) }],
+    onClick: () => { st.cat = st.cat === c ? null : c; render(); },
+  })), { fmt: money, title: "Cost by task type", labelWidth: 150 });
+  columns(ctxEl, ctxRows.map((r) => ({ label: r.label, value: r.per, tipRows: [{ label: "Calls", value: int(r.calls) }, { label: "Cost", value: money(r.cost) }, { label: "Per call", value: money(r.per) }] })),
+    { axisFmt: (v) => "$" + (v < 1 ? v.toFixed(2) : v.toFixed(1)), labelFmt: (v) => v ? money(v) : "", title: "Cost per call by context size", color: "var(--s2)", height: 180 });
+}
+
+function kpi(label, value, note, hero) {
+  return h("div", { class: "card kpi" + (hero ? " hero" : "") }, h("div", { class: "label" }, label), h("div", { class: "value" }, value), h("div", { class: "note" }, note));
+}
+function card(title, sub, ...kids) { return h("section", { class: "card" }, h("h2", {}, title), sub ? h("div", { class: "sub" }, sub) : null, ...kids); }
+
+function whatIf(rows, total) {
+  return WHATIF.map((w) => {
+    let c = 0;
+    for (const [mi, r] of rows) c += M[mi].priced ? reprice(r, w.rates) : 0;
+    return { name: w.name, cost: c, delta: total ? (c - total) / total : 0 };
+  });
+}
+
+function insights(c) {
+  const out = [];
+  const add = (html, why) => out.push(h("li", {}, h("div", {}, ...html), why ? h("div", { class: "why" }, why) : null));
+  const { total } = c;
+  if (!total) return [h("li", {}, "No priced usage in this slice.")];
+  const [mi0, m0] = c.modelOrder[0];
+  add([h("b", {}, M[mi0].name), ` is ${pct(m0.cost / total)} of spend (${money(m0.cost)}).`],
+    c.modelOrder.length > 1 ? `Next: ${c.modelOrder.slice(1, 3).map(([mi, v]) => `${M[mi].name} ${pct(v.cost / total)}`).join(", ")}.` : null);
+  if (c.projOrder.length > 1) {
+    const [pi, p] = c.projOrder[0];
+    add([h("b", {}, P[pi].name), ` is your most expensive project: ${money(p.cost)} (${pct(p.cost / total)}) across ${p.tasks} tasks.`],
+      `Top 3 projects together: ${pct(c.projOrder.slice(0, 3).reduce((a, [, v]) => a + v.cost, 0) / total)} of spend.`);
+  }
+  if (c.costsSorted.length >= 20) {
+    const n = Math.max(1, Math.round(c.costsSorted.length * 0.05));
+    const top = c.costsSorted.slice(0, n).reduce((a, b) => a + b, 0);
+    add([`Your costliest `, h("b", {}, `${n} tasks`), ` (top 5%) are `, h("b", {}, pct(top / total)), ` of spend.`],
+      `Spend is driven by a few big jobs, not by everyday prompts. Sort the Tasks table by cost to see them.`);
+  }
+  if (c.medTurns) {
+    const long = c.real.filter((x) => x.t.calls >= 30);
+    const lc = long.reduce((a, x) => a + x.cost, 0);
+    add([`A typical task takes `, h("b", {}, `${c.medTurns} turns`), `; 1 in 10 takes ${c.p90Turns}+.`],
+      long.length ? `${long.length} task${long.length === 1 ? "" : "s"} ran 30+ turns and cost ${money(lc)} (${pct(lc / total)}). Long autonomous runs are where the money goes.` : null);
+  }
+  const big = c.ctx[3][1] + c.ctx[4][1], small = c.ctx[0];
+  const bigCalls = c.ctx[3][0] + c.ctx[4][0];
+  if (big / total > 0.1 && bigCalls && small[0]) {
+    const ratio = (big / bigCalls) / (small[1] / small[0]);
+    add([h("b", {}, pct(big / total)), ` of spend came from calls carrying 200K+ tokens of context, at ${ratio.toFixed(0)}x the cost per call of small-context calls.`],
+      `Each turn re-sends the conversation so far. /clear (or a fresh session) between unrelated tasks, and /compact on long ones, keeps this down.`);
+  }
+  // model swap
+  const pricey = c.modelOrder.filter(([mi, v]) => M[mi].rates && M[mi].rates.in >= 10 && v.cost / total > 0.05);
+  const opus = WHATIF.find((w) => /opus/i.test(w.name));
+  if (pricey.length && opus) {
+    let now = 0, alt = 0;
+    for (const [mi, r] of c.allRows) if (pricey.some(([p]) => p === mi)) { now += r[0]; alt += reprice(r, opus.rates); }
+    if (now - alt > 1) add([`${pricey.map(([mi]) => M[mi].name).join(" + ")} cost ${money(now)}. The same tokens on `, h("b", {}, opus.name), ` would be ${money(alt)} (`, h("b", {}, `save ${money(now - alt)}`), `).`],
+      `Worth it for the hardest problems. For routine edits, switch with /model.`);
+  }
+  add([h("b", {}, pct(c.hitRate, 1)), ` of input tokens were cache hits, saving about `, h("b", {}, money(c.saved)), `.`],
+    `Cached context is billed at 5 to 10% of the normal input price. Cache writes cost extra, so short-lived sessions that never reuse their cache pay more.`);
+  if (c.subCost / total > 0.03) add([`Subagents account for about `, h("b", {}, pct(c.subCost / total)), ` of spend (${money(c.subCost)}).`],
+    `Each subagent starts with its own fresh context. Great for parallel research, costly for small lookups you could do inline.`);
+  if (c.errTasks) add([h("b", {}, `${c.errTasks} task${c.errTasks === 1 ? "" : "s"}`), ` hit 3+ tool errors, together costing ${money(c.errCost)}.`],
+    `Every retry re-pays for the full context. Filter the Tasks table by the Errors column to find them.`);
+  const bg = c.X.filter((x) => x.t.bg).reduce((a, x) => a + x.cost, 0);
+  if (bg / total > 0.01) add([`${money(bg)} (${pct(bg / total)}) went to background calls Claude Code makes for you.`],
+    `Session titles and "while you were away" recaps. Logged only in Claude Code's own cost tracker, not as transcript messages.`);
+  return out;
+}
+
+function modelDots(rows) {
+  return Object.entries(rows).sort((a, b) => b[1][0] - a[1][0]).map(([mi]) => h("span", { class: "mdot" }, h("span", { class: "sw", style: `background:${M[mi].color}` }), M[mi].name));
+}
+
+function tasksTable(X) {
+  const rows = X.filter((x) => !x.t.bg).map((x) => ({ x, t: x.t, cost: x.cost, when: x.t.ts, proj: P[x.t.proj].name, cat: x.t.cat, turns: x.t.calls, sub: x.t.sub, tools: Object.values(x.t.tools || {}).reduce((a, v) => a + v[0], 0), errs: x.t.errs, ctx: x.t.ctx, dur: x.t.dur, text: x.t.text }));
+  return sortableTable([
+    { key: "cost", label: "Cost", num: true, render: (r) => money(r.cost) },
+    { key: "when", label: "When", cls: "nowrap", render: (r) => fmtWhen(r.when) },
+    { key: "proj", label: "Project", cls: "nowrap" },
+    { key: "text", label: "Prompt", cls: "prompt", render: (r) => h("div", { title: r.text }, r.text) },
+    { key: "turns", label: "Turns", num: true, help: "Main-thread API calls" },
+    { key: "sub", label: "Sub", num: true, help: "Subagent API calls", render: (r) => r.sub || "" },
+    { key: "tools", label: "Tools", num: true, render: (r) => r.tools || "" },
+    { key: "errs", label: "Errors", num: true, render: (r) => r.errs || "" },
+    { key: "ctx", label: "Peak ctx", num: true, help: "Largest context any single call carried", render: (r) => r.ctx ? compact(r.ctx) : "" },
+    { key: "dur", label: "Time", num: true, render: (r) => dur(r.dur) },
+    { key: "cat", label: "Type", render: (r) => h("span", { class: "pill" }, r.cat) },
+  ], rows, st.taskSort, {
+    limit: st.taskLimit, onMore: () => { st.taskLimit += 100; render(true); },
+    onRow: (r) => { st.open = st.open === r.t.i ? null : r.t.i; render(true); },
+    isOpen: (r) => st.open === r.t.i,
+    detail: (r) => taskDetail(r),
+  });
+}
+
+function taskDetail(r) {
+  const t = r.t, sess = S[t.s];
+  const models = Object.entries(r.x.rows).sort((a, b) => b[1][0] - a[1][0]);
+  const tools = Object.entries(t.tools || {}).sort((a, b) => b[1][0] - a[1][0]);
+  return h("div", {},
+    h("p", { class: "full-prompt" }, t.text),
+    h("div", { class: "detail-grid" },
+      h("div", {}, h("div", { class: "k" }, "Session"), sess.title || sess.id.slice(0, 8), sess.branch ? h("div", { class: "muted" }, "branch " + sess.branch) : null),
+      h("div", {}, h("div", { class: "k" }, "Project"), P[t.proj].path),
+      h("div", {}, h("div", { class: "k" }, "Models"), models.map(([mi, v]) => h("div", {}, h("span", { class: "mdot" }, h("span", { class: "sw", style: `background:${M[mi].color}` }), M[mi].name), `${money(v[0])} · ${int(v[6])} calls · ${compact(v[2])} out · ${compact(v[3])} cached`))),
+      h("div", {}, h("div", { class: "k" }, "Tools"), tools.length ? tools.slice(0, 8).map(([n, [c, e]]) => h("div", {}, `${n} ×${c}`, e ? h("span", { style: "color:var(--crit)" }, `  ${e} failed`) : null)) : "none"),
+      Object.keys(t.agents || {}).length ? h("div", {}, h("div", { class: "k" }, "Subagents"), Object.entries(t.agents).map(([n, c]) => h("div", {}, `${n} ×${c}`))) : null,
+      h("div", {}, h("div", { class: "k" }, "Resume"), h("code", {}, `claude --resume ${sess.id}`)),
+    ));
+}
+
+function sessionsTable(bySess) {
+  const rows = [...bySess.entries()].map(([si, v]) => ({ si, title: S[si].title || "(untitled)", proj: P[S[si].p].name, first: v.first, cost: v.cost, tasks: v.tasks, calls: v.calls, per: v.tasks ? v.cost / v.tasks : null, add: S[si].add, del: S[si].del, prs: S[si].prs, models: v.models, dur: v.dur }));
+  return sortableTable([
+    { key: "cost", label: "Cost", num: true, render: (r) => money(r.cost) },
+    { key: "first", label: "Started", cls: "nowrap", render: (r) => fmtWhen(r.first) },
+    { key: "title", label: "Session", cls: "prompt", render: (r) => h("div", { title: r.title }, r.title) },
+    { key: "proj", label: "Project", cls: "nowrap" },
+    { key: "tasks", label: "Tasks", num: true },
+    { key: "calls", label: "API calls", num: true, render: (r) => int(r.calls) },
+    { key: "per", label: "$/task", num: true, render: (r) => money(r.per) },
+    { key: "dur", label: "Time", num: true, render: (r) => dur(r.dur), help: "Time Claude spent working on tasks" },
+    { key: "add", label: "Lines +/-", num: true, render: (r) => (r.add || r.del) ? `+${int(r.add)} / -${int(r.del)}` : "" },
+    { key: "models", label: "Models", sort: (r) => Object.keys(r.models).length, render: (r) => modelDots(Object.fromEntries(Object.entries(r.models).map(([k, v]) => [k, [v]]))) },
+    { key: "prs", label: "PRs", sort: (r) => r.prs.length, render: (r) => r.prs.map((u) => h("a", { href: u, target: "_blank", rel: "noopener" }, "#" + (u.match(/(\d+)$/) || [, "PR"])[1] + " ")) },
+  ], rows, st.sessSort, { onRow: (r) => { st.q = ""; st.tab = "tasks"; st.project = S[r.si].p; render(); } });
+}
+
+function toolsTable(byTool) {
+  const rows = [...byTool.entries()].map(([name, v]) => ({ name, calls: v.calls, errs: v.errs, rate: v.calls ? v.errs / v.calls : 0, tasks: v.tasks }));
+  return sortableTable([
+    { key: "name", label: "Tool" },
+    { key: "calls", label: "Calls", num: true, render: (r) => int(r.calls) },
+    { key: "tasks", label: "Tasks using it", num: true, render: (r) => int(r.tasks) },
+    { key: "errs", label: "Errors", num: true, render: (r) => r.errs ? int(r.errs) : "" },
+    { key: "rate", label: "Error rate", num: true, render: (r) => r.errs ? h("span", { style: r.rate >= 0.15 && r.calls >= 5 ? "color:var(--crit);font-weight:600" : "" }, pct(r.rate, 1)) : "" },
+  ], rows, st.toolSort, {});
+}
+
+// ---------- footer ----------
+function renderFooter() {
+  const m = D.meta;
+  const priced = M.filter((x) => x.priced);
+  const unpriced = M.filter((x) => !x.priced);
+  put($("#foot"),
+    h("p", {}, `Generated ${new Date(m.generated).toLocaleString()} from ${m.files} session logs in ${m.data_dir}. Nothing left your machine. Version ${m.version}.`),
+    h("p", {}, "How costs are computed: every API call is read from Claude Code's transcripts, de-duplicated (Claude Code writes one record per content block, each repeating the usage), and priced at Anthropic's list prices including the 5-minute vs 1-hour cache-write split, Haiku 5.5's long-prompt tier, fast mode, US-only routing, and web searches. Subagent calls are attributed to the prompt that launched them. ",
+      "These are API-equivalent costs: on a Pro/Max/Team plan you pay a flat fee, and this shows what the same usage would cost on the API. ",
+      h("a", { href: m.pricing_source, target: "_blank", rel: "noopener" }, `Prices checked ${m.pricing_checked}.`)),
+    h("details", {}, h("summary", {}, "Price table ($ per million tokens)"),
+      h("table", {}, h("thead", {}, h("tr", {}, ["Model", "Input", "5m write", "1h write", "Cache read", "Output"].map((x, i) => h("th", { class: i ? "num" : null }, x)))),
+        h("tbody", {}, priced.map((x) => h("tr", {}, h("td", {}, x.name), ["in", "w5", "w1", "read", "out"].map((k) => h("td", { class: "num" }, "$" + (+x.rates[k].toFixed(4)))))))),
+      unpriced.length ? h("p", {}, "Not priced (non-Anthropic or unknown): " + unpriced.map((x) => x.name).join(", ")) : null),
+    m.warnings && m.warnings.length ? h("details", {}, h("summary", {}, `${m.warnings.length} log files skipped`), h("pre", {}, m.warnings.join("\n"))) : null,
+  );
+}
+
+// ---------- theme ----------
+$("#theme").addEventListener("click", () => {
+  const cur = document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  document.documentElement.dataset.theme = cur === "dark" ? "light" : "dark";
+  try { localStorage.setItem("ccu-theme", document.documentElement.dataset.theme); } catch (e) {}
+});
+try { const t = localStorage.getItem("ccu-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+document.title = `Claude Code usage · ${money(T.reduce((a, t) => a + t.cost, 0))}`;
+let rz; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => render(true), 120); });
+renderFooter();
+render();
+})();
+</script>
+</body>
+</html>
