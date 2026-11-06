@@ -16,9 +16,8 @@ $ source venv/bin/activate
 $ pip install -r requirements.txt
 ```
 
-## ChatGPT Bookmarklet
-
-- [Find bookmarklet code here.](./chatgpt-query-fanout-analyzer.js) 
+## ChatGPT Tracking Chrome Extension
+- Chrome Extension to track ChatGPT prompts and Query Fanouts ([extension](https://chromewebstore.google.com/detail/llm-inspector/fphgdjajimcchgblmjfbdjfbiapgnhei?authuser=0&hl=en-US), [article](https://jcchouinard.substack.com/p/chatgpt-extension-update-prompts))
 
 ## AI Agents
 
