@@ -38,3 +38,10 @@ CLAUDE.md templates in [`templates/`](templates/). Copy one into a new project a
 
 ## Related
 - [token-gate-tutorial](https://github.com/jcchouinard/token-gate-tutorial): cut Claude Code token cost by blocking full reads of big files with a PreToolUse hook and a Haiku subagent
+
+## Quick Github Links
+- [Matt Pockock](https://github.com/mattpocock)
+- [rea](https://github.com/morluto/rea)
+- [scrapling](https://github.com/D4Vinci/Scrapling)
+- [superpowers](https://github.com/obra/superpowers)
+
