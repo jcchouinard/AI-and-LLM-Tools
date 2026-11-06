@@ -20,7 +20,7 @@ Without the plugin system:
 git clone --depth 1 https://github.com/jcchouinard/AI-and-LLM-Tools
 AI-and-LLM-Tools/plugins/lean-start/install.sh      # adds /lean-start, touches nothing else
 ```
-Requirements: Python 3.9+, git (modes 2 to 4), gh (only to create GitHub repos). Linux mode 4 also needs `bubblewrap` and `socat`. macOS and Linux; Windows through WSL2.
+Requirements: Python 3.10+, git (modes 2 to 4), gh (only to create GitHub repos). Linux mode 4 also needs `bubblewrap` and `socat`. macOS and Linux; Windows through WSL2.
 
 ## Use
 ```

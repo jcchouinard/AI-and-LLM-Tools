@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""lean-start: create a Claude Code project switched off as much as possible. Stdlib only, Python 3.9+.
+"""lean-start: create a Claude Code project switched off as much as possible. Stdlib only, Python 3.10+.
 
 Subcommands (run with python3 -I):
   setup      detect or save identities and the default location (~/.config/lean-start/config.json)
@@ -466,8 +466,7 @@ def cmd_doctor(a):
         load_json(os.path.join(proj, ".claude", "settings.json"))
     except (OSError, ValueError):
         problems.append(".claude/settings.json is missing or not valid JSON")
-    if not shutil.which("claude"):
-        problems.append("claude is not on PATH")
+    warnings = [] if shutil.which("claude") else ["claude is not on PATH (install Claude Code to launch the project)"]
     mode_cfg = load_json(os.path.join(TPL, "modes", f"{man['mode']}.json"), {})
     if mode_cfg.get("_git") and man.get("identity", "none") != "none":
         ident = config()["identities"].get(man["identity"], {})
@@ -475,7 +474,7 @@ def cmd_doctor(a):
         if ident and got != ident.get("git_email"):
             problems.append(f"git email is '{got}', expected '{ident.get('git_email')}'")
     print(f"mode {man['mode']}, lean-start {man['version']}, {len(man['files'])} files")
-    print("\n".join("- " + p for p in problems) or "OK")
+    print("\n".join(["- " + p for p in problems] + ["- warning: " + w for w in warnings]) or "OK")
     return 1 if problems else 0
 
 
