@@ -1,4 +1,4 @@
-# pr-gate template: lightweight adversarial pre-PR safety gate
+# adversarial-reviewer template: lightweight adversarial pre-PR safety gate
 
 ## Project purpose
 Build a global Claude Code skill named `pr-gate` that blocks risky content before any PR, push or publish. It has two modes:

@@ -1,4 +1,4 @@
-# pr-gate template
+# adversarial-reviewer template
 
 A recipe for building a lightweight adversarial safety gate (credentials, prompt injection, hidden unicode, risky files, PII) that runs before any PR or push, as a Claude Code skill.
 
